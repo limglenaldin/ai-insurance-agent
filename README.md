@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# InsurAI
 
-## Getting Started
+**Your Insurance AI Assistant Agent**
 
-First, run the development server:
+InsurAI is an AI-powered assistant that helps users **understand insurance products in plain language**.  
+Built with Next.js, shadcn/ui, and Meta Llama, it provides **grounded Q&A with citations from official RIPLAY documents**, policy comparison, and personalized recommendations — all designed with a **privacy-first approach**.
+
+---
+
+## 🚀 Features (MVP)
+
+- **Grounded Q&A with Citations**  
+  Ask any question about an insurance product.  
+  Answers always cite RIPLAY documents.  
+  If no relevant information is found → returns _“Not found in the documents…”_.
+
+- **Profile-Based Personalization**  
+  Mini profile form (vehicle type, city, year, flood risk, usage).  
+  Stored locally in the browser (localStorage).  
+  Used to provide more relevant answers and add-on suggestions.
+
+- **Policy Product Comparison**  
+  Select two products (e.g. Comprehensive vs TLO) and generate a comparison table.  
+  Key differences shown with citations (Coverage, Exclusions, Add-ons, Notes).
+
+- **Local-Only Chat History**  
+  Conversations are saved only in the user’s browser via localStorage.  
+  Clear chat anytime with a single click.
+
+- **Landing Page with CTA**  
+  Simple intro section with app name, description, and “Try the Demo” button.
+
+- **Ethics & Transparency**
+  - Always grounded on official documents (RIPLAY).
+  - Always display citations and disclaimers.
+  - No sensitive data stored server-side.
+
+---
+
+## 📦 Tech Stack
+
+- **Frontend:** Next.js (TypeScript), Tailwind, shadcn/ui
+- **Backend (API Routes):** Next.js API layer
+- **AI:** Meta Llama (via API)
+- **Data Source:** Static JSON files (`/data/products.json`, `/data/productDocuments.json`, RIPLAY excerpts)
+- **Storage:** LocalStorage (profile + chat history only)
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Prerequisites
+
+- Node.js 18+
+- Package manager: npm, yarn, or pnpm
+- Meta Llama API key
+
+### 2. Clone the Repo
+
+```bash
+git clone https://github.com/your-username/ai-insurance-pa.git
+cd ai-insurance-pa
+```
+
+### 3. Install Dependencies
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+### 4. Environment Variables
+
+Create .env.local in the root directory:
+
+```bash
+LLAMA_API_KEY=your-meta-llama-api-key
+LLAMA_API_URL=https://api.llama.meta/...
+```
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 6. Open the App
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Visit http://localhost:3000 and You should see the landing page with the CTA → start chat demo.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📌 Limitations (MVP)
 
-To learn more about Next.js, take a look at the following resources:
+- Static documents only (RIPLAY).
+- No real vector DB (simple keyword/tag filtering).
+- No login/authentication (profile & chat stored locally).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ⚖️ Disclaimer
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This app is for educational and demo purposes only.
+It is not a substitute for official policy documents or professional legal/financial advice.
+Always confirm details with the official insurance provider or certified agent.
