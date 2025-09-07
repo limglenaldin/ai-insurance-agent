@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Product, ComparisonResult, ProductComparison, UserProfile } from "@/lib/types";
+import { Product, ComparisonResult, UserProfile } from "@/lib/types";
 import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 
@@ -21,6 +21,7 @@ export default function ComparePage() {
   const [comparison, setComparison] = useState<ComparisonResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -59,119 +60,38 @@ export default function ComparePage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to generate comparison");
-
       const data = await response.json();
+      
+      if (!response.ok) {
+        // Handle API error response
+        throw new Error(data.error || "Failed to generate comparison");
+      }
+      
+      // Check if response has the expected structure
+      if (!data.productA || !data.productB) {
+        throw new Error("Invalid response format from comparison API");
+      }
+
       setComparison(data);
     } catch (error) {
       console.error("Comparison error:", error);
       
-      // Fallback to mock comparison
-      const productA = products.find(p => p.id.toString() === selectedProductA);
-      const productB = products.find(p => p.id.toString() === selectedProductB);
-      
-      if (productA && productB) {
-        setComparison(generateMockComparison(productA, productB));
-      }
+      // Show error message to user instead of fallback
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      alert(`Gagal membuat perbandingan: ${errorMessage}`);
+      setComparison(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const generateMockComparison = (productA: Product, productB: Product): ComparisonResult => {
-    const getProductDetails = (product: Product): ProductComparison => {
-      if (product.name.includes("Autocillin")) {
-        return {
-          name: product.name,
-          coverage: product.mainCoverage === "Comprehensive" ? "Comprehensive" : "TLO",
-          features: [
-            "Perlindungan total kerusakan",
-            "Tanggung jawab pihak ketiga",
-            "Layanan derek 24 jam",
-            "Bengkel rekanan resmi",
-            "Ganti rugi pencurian"
-          ],
-          suitableFor: [
-            "Kendaraan baru dan bernilai tinggi",
-            "Penggunaan harian intensif",
-            "Area perkotaan dengan risiko tinggi"
-          ],
-          limitations: [
-            "Premi relatif tinggi",
-            "Persyaratan survey kendaraan",
-            "Batasan usia kendaraan"
-          ]
-        };
-      }
-      
-      if (product.name.includes("Motopro")) {
-        return {
-          name: product.name,
-          coverage: "TLO",
-          features: [
-            "Ganti rugi pencurian motor",
-            "Santunan kecelakaan diri",
-            "Layanan ambulans gratis",
-            "Bengkel rekanan luas",
-            "Proses klaim mudah"
-          ],
-          suitableFor: [
-            "Motor dengan nilai ekonomis tinggi",
-            "Penggunaan sehari-hari",
-            "Area dengan risiko pencurian tinggi"
-          ],
-          limitations: [
-            "Tidak cover kerusakan ringan",
-            "Hanya untuk kerusakan >75%",
-            "Batasan wilayah tertentu"
-          ]
-        };
-      }
-      
-      if (product.name.includes("Mobilite") || product.name.includes("Motolite")) {
-        return {
-          name: product.name,
-          coverage: "TLO",
-          features: [
-            "Premi sangat terjangkau",
-            "Santunan kecelakaan diri",
-            "Proses klaim cepat",
-            "Tidak perlu survey",
-            "Pembayaran fleksibel"
-          ],
-          suitableFor: [
-            "Kendaraan menengah ke bawah",
-            "Budget terbatas",
-            "Perlindungan dasar"
-          ],
-          limitations: [
-            "Manfaat terbatas",
-            "Batasan nilai santunan",
-            "Tidak untuk kendaraan mewah"
-          ]
-        };
-      }
-      
-      return {
-        name: product.name,
-        coverage: product.mainCoverage,
-        features: ["Fitur standar asuransi"],
-        suitableFor: ["Berbagai kebutuhan"],
-        limitations: ["Lihat syarat dan ketentuan"]
-      };
-    };
-
-    const detailA = getProductDetails(productA);
-    const detailB = getProductDetails(productB);
-
-    return {
-      productA: detailA,
-      productB: detailB,
-      summary: `Perbandingan antara ${productA.name} dan ${productB.name}: ${productA.name} menawarkan ${detailA.coverage} coverage yang ${detailA.coverage === 'Comprehensive' ? 'lebih lengkap' : 'fokus pada perlindungan utama'}, sementara ${productB.name} memberikan ${detailB.coverage} coverage dengan ${detailB.features[0]}. Pilih berdasarkan kebutuhan dan budget Anda.`
-    };
-  };
 
   const getFilteredProducts = () => {
+    // Only access localStorage on the client-side
+    if (typeof window === 'undefined') {
+      return products; // Return all products during SSR
+    }
+    
     const savedProfile = localStorage.getItem("insurai_profile");
     const userProfile = savedProfile ? JSON.parse(savedProfile) : null;
     
@@ -184,7 +104,19 @@ export default function ComparePage() {
       : products;
   };
 
-  const filteredProducts = getFilteredProducts();
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+
+  // Set client flag when component mounts
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Update filtered products when component mounts (client-side)
+  useEffect(() => {
+    if (isClient) {
+      setFilteredProducts(getFilteredProducts());
+    }
+  }, [products, isClient]);
 
   return (
     <div className="h-screen flex bg-white dark:bg-gray-900">
@@ -235,7 +167,7 @@ export default function ComparePage() {
         <div className="flex-1 overflow-y-auto p-4">
           <div className="max-w-6xl mx-auto">
 
-          {!localStorage.getItem("insurai_profile") && (
+          {isClient && !localStorage.getItem("insurai_profile") && (
             <Card className="mb-6 border-blue-200 bg-blue-50">
               <CardHeader>
                 <CardTitle className="text-blue-800">Lengkapi Profil Anda</CardTitle>
@@ -261,7 +193,7 @@ export default function ComparePage() {
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih produk pertama" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     {filteredProducts.map((product) => (
                       <SelectItem 
                         key={product.id} 
@@ -285,7 +217,7 @@ export default function ComparePage() {
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih produk kedua" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     {filteredProducts.map((product) => (
                       <SelectItem 
                         key={product.id} 

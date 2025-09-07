@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
-import { UserProfile, Product, ProductComparison, ComparisonResult, DocumentSnippet } from "@/lib/types";
+import { UserProfile, Product, ComparisonResult, DocumentSnippet } from "@/lib/types";
 import { getVehicleTypeLabel, getCityLabel, getUsageTypeLabel } from "@/lib/utils";
 import { dbHelpers } from "@/lib/db";
 
@@ -40,9 +40,18 @@ export async function POST(request: NextRequest) {
     const productBSnippets = await getProductDocumentSnippets(productB, profile);
 
     // Generate comparison using AI with real document data
-    const comparison = await generateAIComparison(productA, productB, profile, productASnippets, productBSnippets);
-
-    return NextResponse.json(comparison);
+    try {
+      const comparison = await generateAIComparison(productA, productB, profile, productASnippets, productBSnippets);
+      return NextResponse.json(comparison);
+    } catch (aiError) {
+      console.error("AI comparison failed:", aiError);
+      
+      // Return error response that frontend can handle
+      return NextResponse.json(
+        { error: "Failed to generate comparison. Please ensure both services are running and try again." },
+        { status: 500 }
+      );
+    }
 
   } catch (error) {
     console.error("Compare API error:", error);
@@ -92,7 +101,12 @@ async function getProductDocumentSnippets(
 
       if (response.ok) {
         const searchResult = await response.json();
-        const snippets: DocumentSnippet[] = searchResult.chunks.map((chunk: any) => ({
+        const snippets: DocumentSnippet[] = searchResult.chunks.map((chunk: {
+          content: string;
+          doc_title: string;
+          section: string;
+          source: string;
+        }) => ({
           content: chunk.content,
           docTitle: chunk.doc_title,
           section: chunk.section,
@@ -102,7 +116,11 @@ async function getProductDocumentSnippets(
         // Filter snippets that are relevant to the specific product
         const relevantSnippets = snippets.filter(snippet => 
           snippet.docTitle.toLowerCase().includes(product.name.toLowerCase()) ||
-          snippet.content.toLowerCase().includes(product.name.toLowerCase())
+          snippet.docTitle.toLowerCase().includes("autocillin") ||
+          snippet.docTitle.toLowerCase().includes("motopro") ||
+          snippet.content.toLowerCase().includes("autocillin") ||
+          snippet.content.toLowerCase().includes("motopro") ||
+          snippet.content.toLowerCase().includes(product.mainCoverage?.toLowerCase() || "")
         );
 
         allSnippets.push(...relevantSnippets);
@@ -153,46 +171,47 @@ User Profile:
           .join('\n\n---\n\n')
       : `Basic product info: ${productB.name} (${productB.mainCoverage} coverage for ${productB.vehicleKind})`;
 
-    const systemPrompt = `You are an Indonesian insurance expert. Compare these two insurance products objectively based ONLY on the provided document excerpts. 
+    const systemPrompt = `You are an Indonesian insurance expert. Compare these two insurance products based on the provided document excerpts and known insurance principles.
 
-STRICT RULES:
-1. Base your comparison ONLY on the provided document context below
-2. If information is not available in the documents, state "Informasi tidak tersedia dalam dokumen"
-3. Always include document citations when making specific claims
-4. Answer in Indonesian language
-5. Be accurate and factual
+INSTRUCTIONS:
+1. PRIMARY: Use information from the provided document excerpts when available
+2. SECONDARY: Apply general insurance knowledge to fill gaps logically  
+3. FOCUS: Highlight key differences between products, especially coverage types
+4. LANGUAGE: Respond in Indonesian language
+5. ACCURACY: Be factual and helpful
 
-PRODUCT A CONTEXT:
+PRODUCT A: ${productA.name} (Coverage: ${productA.mainCoverage})
+DOCUMENT EXCERPTS:
 ${productAContext}
 
-PRODUCT B CONTEXT:
+PRODUCT B: ${productB.name} (Coverage: ${productB.mainCoverage})
+DOCUMENT EXCERPTS:
 ${productBContext}
 
 ${profileContext}
 
-Based ONLY on the document context above, provide a detailed comparison in Indonesian covering:
-1. Key features of each product (with citations)
-2. Who each product is suitable for (based on document info)
-3. Limitations of each product (from documents)
-4. Summary recommendation based on user profile and document information
+COMPARISON FOCUS:
+- If comparing Comprehensive vs TLO: Emphasize coverage scope differences, premium implications, and suitable use cases
+- If comparing same coverage types: Focus on feature differences, service quality, and specific benefits
+- Consider user profile for personalized recommendations
 
-Format your response as JSON with this structure:
+Provide a detailed comparison in Indonesian with this JSON structure:
 {
   "productA": {
     "name": "${productA.name}",
-    "coverage": "coverage type from documents",
-    "features": ["feature1 (from doc)", "feature2 (from doc)", ...],
-    "suitableFor": ["suitable1 (from doc)", "suitable2 (from doc)", ...],
-    "limitations": ["limit1 (from doc)", "limit2 (from doc)", ...]
+    "coverage": "${productA.mainCoverage || 'Unknown'}",
+    "features": ["feature1", "feature2", "feature3", "feature4"],
+    "suitableFor": ["suitable1", "suitable2", "suitable3"],
+    "limitations": ["limitation1", "limitation2", "limitation3"]
   },
   "productB": {
     "name": "${productB.name}",
-    "coverage": "coverage type from documents", 
-    "features": ["feature1 (from doc)", "feature2 (from doc)", ...],
-    "suitableFor": ["suitable1 (from doc)", "suitable2 (from doc)", ...],
-    "limitations": ["limit1 (from doc)", "limit2 (from doc)", ...]
+    "coverage": "${productB.mainCoverage || 'Unknown'}",
+    "features": ["feature1", "feature2", "feature3", "feature4"],
+    "suitableFor": ["suitable1", "suitable2", "suitable3"],
+    "limitations": ["limitation1", "limitation2", "limitation3"]
   },
-  "summary": "detailed comparison summary and recommendation based on documents and user profile"
+  "summary": "Detailed comparison summary explaining key differences and providing recommendation based on coverage types and user profile"
 }`;
 
     const completion = await groq.chat.completions.create({
@@ -208,114 +227,40 @@ Format your response as JSON with this structure:
     const aiResponse = completion.choices[0]?.message?.content;
     
     if (aiResponse) {
+      console.log("Raw AI Response:", aiResponse.substring(0, 500) + "...");
+      
       try {
-        // Try to parse AI response as JSON
-        const parsed = JSON.parse(aiResponse);
+        // Try to extract JSON from the response (sometimes AI wraps it in markdown)
+        let jsonStr = aiResponse;
+        
+        // Remove markdown code blocks if present
+        const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+          jsonStr = jsonMatch[1];
+        } else {
+          // Look for the first { and last }
+          const firstBrace = aiResponse.indexOf('{');
+          const lastBrace = aiResponse.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && firstBrace < lastBrace) {
+            jsonStr = aiResponse.substring(firstBrace, lastBrace + 1);
+          }
+        }
+        
+        const parsed = JSON.parse(jsonStr);
+        console.log("Successfully parsed AI response");
         return parsed;
       } catch (parseError) {
-        console.warn("Failed to parse AI response as JSON, using fallback");
+        console.warn("Failed to parse AI response as JSON:", parseError);
+        console.log("AI response was:", aiResponse);
       }
     }
 
-    // Fallback to mock comparison if AI fails
-    return generateMockComparison(productA, productB);
+    // Return error if AI fails - but don't throw, let the outer catch handle it
+    throw new Error("AI processing failed to generate valid comparison");
 
   } catch (error) {
-    console.error("AI comparison failed, using mock:", error);
-    return generateMockComparison(productA, productB);
+    console.error("AI comparison failed:", error);
+    throw error; // Re-throw to be handled by outer catch
   }
-}
-
-function generateMockComparison(productA: Product, productB: Product): ComparisonResult {
-  const getProductDetails = (product: Product): ProductComparison => {
-    if (product.name.includes("Autocillin")) {
-      return {
-        name: product.name,
-        coverage: product.mainCoverage === "Comprehensive" ? "Comprehensive" : "TLO",
-        features: [
-          "Perlindungan total kerusakan",
-          "Tanggung jawab pihak ketiga",
-          "Layanan derek 24 jam",
-          "Bengkel rekanan resmi",
-          "Ganti rugi pencurian"
-        ],
-        suitableFor: [
-          "Kendaraan baru dan bernilai tinggi",
-          "Penggunaan harian intensif",
-          "Area perkotaan dengan risiko tinggi"
-        ],
-        limitations: [
-          "Premi relatif tinggi",
-          "Persyaratan survey kendaraan",
-          "Batasan usia kendaraan"
-        ]
-      };
-    }
-    
-    if (product.name.includes("Motopro")) {
-      return {
-        name: product.name,
-        coverage: "TLO",
-        features: [
-          "Ganti rugi pencurian motor",
-          "Santunan kecelakaan diri",
-          "Layanan ambulans gratis",
-          "Bengkel rekanan luas",
-          "Proses klaim mudah"
-        ],
-        suitableFor: [
-          "Motor dengan nilai ekonomis tinggi",
-          "Penggunaan sehari-hari",
-          "Area dengan risiko pencurian tinggi"
-        ],
-        limitations: [
-          "Tidak cover kerusakan ringan",
-          "Hanya untuk kerusakan >75%",
-          "Batasan wilayah tertentu"
-        ]
-      };
-    }
-    
-    if (product.name.includes("Mobilite") || product.name.includes("Motolite")) {
-      return {
-        name: product.name,
-        coverage: "TLO",
-        features: [
-          "Premi sangat terjangkau",
-          "Santunan kecelakaan diri",
-          "Proses klaim cepat",
-          "Tidak perlu survey",
-          "Pembayaran fleksibel"
-        ],
-        suitableFor: [
-          "Kendaraan menengah ke bawah",
-          "Budget terbatas",
-          "Perlindungan dasar"
-        ],
-        limitations: [
-          "Manfaat terbatas",
-          "Batasan nilai santunan",
-          "Tidak untuk kendaraan mewah"
-        ]
-      };
-    }
-    
-    return {
-      name: product.name,
-      coverage: product.mainCoverage,
-      features: ["Fitur standar asuransi"],
-      suitableFor: ["Berbagai kebutuhan"],
-      limitations: ["Lihat syarat dan ketentuan"]
-    };
-  };
-
-  const detailA = getProductDetails(productA);
-  const detailB = getProductDetails(productB);
-
-  return {
-    productA: detailA,
-    productB: detailB,
-    summary: `Perbandingan antara ${productA.name} dan ${productB.name}: ${productA.name} menawarkan ${detailA.coverage} coverage yang ${detailA.coverage === 'Comprehensive' ? 'lebih lengkap' : 'fokus pada perlindungan utama'}, sementara ${productB.name} memberikan ${detailB.coverage} coverage dengan ${detailB.features[0]}. Pilih berdasarkan kebutuhan dan budget Anda.`
-  };
 }
 
