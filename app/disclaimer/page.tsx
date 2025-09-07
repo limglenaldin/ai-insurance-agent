@@ -17,7 +17,7 @@ export default function DisclaimerPage() {
               Disclaimer
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              Penting untuk dipahami sebelum menggunakan layanan InsurAI
+              Penting untuk dipahami sebelum menggunakan Maya AI Assistant dan layanan InsurAI
             </p>
           </div>
 
@@ -30,18 +30,19 @@ export default function DisclaimerPage() {
               </CardHeader>
               <CardContent className="text-yellow-700 dark:text-yellow-300 space-y-4">
                 <p>
-                  <strong>InsurAI adalah alat bantu informasi, bukan pengganti konsultasi profesional.</strong> 
-                  Informasi yang diberikan berdasarkan dokumen resmi yang tersedia, namun:
+                  <strong>Maya AI Assistant dan InsurAI adalah alat bantu informasi, bukan pengganti konsultasi profesional.</strong> 
+                  Meskipun Maya menggunakan teknologi RAG (Retrieval-Augmented Generation) dengan dokumen resmi RIPLAY, namun:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
-                  <li>AI dapat membuat kesalahan dalam interpretasi dokumen</li>
-                  <li>Produk asuransi memiliki syarat dan ketentuan yang kompleks</li>
+                  <li>AI dapat membuat kesalahan dalam interpretasi dokumen meski menggunakan citasi</li>
+                  <li>Produk asuransi memiliki syarat dan ketentuan yang sangat kompleks</li>
                   <li>Keputusan asuransi harus dikonsultasikan dengan agen berlisensi</li>
                   <li>Selalu verifikasi informasi penting dengan dokumen polis asli</li>
-                  <li>Premi dan coverage aktual dapat berbeda dari informasi umum</li>
+                  <li>Premi dan coverage aktual dapat berbeda dari informasi umum Maya</li>
+                  <li>Anti-hallucination validation tidak menjamin 100% akurasi informasi</li>
                 </ul>
                 <p className="font-medium">
-                  Gunakan informasi ini sebagai panduan awal, bukan sebagai dasar keputusan final.
+                  Gunakan Maya sebagai konsultan awal untuk pembelajaran, bukan sebagai dasar keputusan final.
                 </p>
               </CardContent>
             </Card>
@@ -52,29 +53,31 @@ export default function DisclaimerPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Akurasi Informasi</h3>
+                  <h3 className="font-semibold mb-2">Teknologi RAG dan Citasi</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Meskipun InsurAI menggunakan dokumen resmi sebagai sumber, teknologi AI masih dapat 
-                    mengalami kesalahan interpretasi. Informasi yang diberikan bersifat umum dan mungkin 
-                    tidak mencakup semua detail spesifik dari produk asuransi.
+                    Meskipun Maya menggunakan teknologi RAG dengan 92 chunk dokumen resmi RIPLAY dan 
+                    menyediakan citasi untuk setiap respons, teknologi AI masih dapat mengalami kesalahan 
+                    interpretasi. Sistem anti-hallucination validation dan semantic search tidak menjamin 
+                    100% akurasi informasi.
                   </p>
                 </div>
                 
                 <div>
                   <h3 className="font-semibold mb-2">Tidak Menggantikan Konsultasi Profesional</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    InsurAI tidak dapat menggantikan saran dari agen asuransi berlisensi, broker, atau 
-                    konsultan keuangan. Untuk keputusan pembelian asuransi, selalu konsultasikan dengan 
-                    profesional yang memiliki lisensi resmi.
+                    Maya AI Assistant tidak dapat menggantikan saran dari agen asuransi berlisensi, broker, 
+                    atau konsultan keuangan. Meskipun Maya memiliki conversation memory dan personalized responses, 
+                    untuk keputusan pembelian asuransi tetap harus dikonsultasikan dengan profesional berlisensi.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">Variasi Produk dan Premi</h3>
+                  <h3 className="font-semibold mb-2">Personalisasi dan Variasi Produk</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Premi, manfaat, dan syarat ketentuan asuransi dapat bervariasi berdasarkan banyak faktor 
-                    seperti usia kendaraan, riwayat klaim, lokasi, dan lainnya. Informasi yang diberikan 
-                    InsurAI bersifat umum dan mungkin berbeda dari penawaran aktual.
+                    Meskipun Maya menggunakan profile-based personalization dan query enhancement 
+                    (seperti Jakarta + flood risk), premi, manfaat, dan syarat ketentuan asuransi dapat 
+                    bervariasi berdasarkan banyak faktor seperti usia kendaraan, riwayat klaim, lokasi 
+                    spesifik, dan lainnya. Informasi Maya bersifat umum dan mungkin berbeda dari penawaran aktual.
                   </p>
                 </div>
               </CardContent>
@@ -86,10 +89,12 @@ export default function DisclaimerPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Verifikasi Informasi</h3>
+                  <h3 className="font-semibold mb-2">Verifikasi Citasi dan Informasi</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Pengguna bertanggung jawab untuk memverifikasi semua informasi yang diberikan InsurAI 
-                    dengan sumber resmi, agen asuransi, atau dokumen polis asli sebelum membuat keputusan.
+                    Meskipun Maya menyediakan citasi dari dokumen resmi RIPLAY, pengguna bertanggung jawab 
+                    untuk memverifikasi semua informasi dengan sumber resmi, agen asuransi, atau dokumen 
+                    polis asli sebelum membuat keputusan. Citasi yang diberikan Maya bisa saja tidak 
+                    mencerminkan konteks lengkap dari dokumen asli.
                   </p>
                 </div>
 
@@ -97,8 +102,8 @@ export default function DisclaimerPage() {
                   <h3 className="font-semibold mb-2">Keputusan Independen</h3>
                   <p className="text-gray-600 dark:text-gray-400">
                     Semua keputusan pembelian atau perubahan produk asuransi merupakan tanggung jawab 
-                    pengguna sepenuhnya. InsurAI hanya menyediakan informasi untuk membantu proses 
-                    pembelajaran dan penelitian awal.
+                    pengguna sepenuhnya. Maya AI Assistant dan fitur comparison hanya menyediakan informasi 
+                    untuk membantu proses pembelajaran dan penelitian awal, bukan sebagai advice finansial resmi.
                   </p>
                 </div>
               </CardContent>
