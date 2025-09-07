@@ -50,3 +50,12 @@ public/docs/*
 
 # prisma
 /lib/generated/prisma
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Vector database (can be regenerated)
+python-service/vector_db/
