@@ -1,103 +1,210 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DisclaimerFooter } from "@/components/disclaimer-footer";
+import { MessageSquare, BarChart3, Shield, Clock, FileText, Zap, CheckCircle, Users } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <div className="flex-1 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4 py-20">
+          {/* Main Hero */}
+          <div className="max-w-6xl mx-auto text-center mb-20">
+            <div className="mb-8">
+              <div className="text-center mb-6">
+                <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                  Maya
+                </h1>
+                <p className="text-lg text-gray-600 dark:text-gray-400">Asisten AI dari InsurAI</p>
+              </div>
+              
+              <div className="max-w-4xl mx-auto mb-8">
+                <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                  Temukan Asuransi yang Tepat dengan Maya! 🎯
+                </h2>
+                <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+                  Asisten AI yang ramah dan berpengalaman untuk membantu Anda memahami produk asuransi dengan mudah. 
+                  Maya memberikan jawaban yang akurat berdasarkan dokumen resmi RIPLAY.
+                </p>
+                
+                {/* Value Proposition */}
+                <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm">
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-gray-700 dark:text-gray-300">100% Gratis</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
+                    <Shield className="w-4 h-4 text-blue-500" />
+                    <span className="text-gray-700 dark:text-gray-300">Data Aman</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
+                    <Zap className="w-4 h-4 text-yellow-500" />
+                    <span className="text-gray-700 dark:text-gray-300">Respon Instan</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <Link href="/chat">
+                  <Button size="lg" className="text-lg px-10 py-6 h-auto w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-300 transform hover:scale-105 transition-all">
+                    <MessageSquare className="w-6 h-6 mr-2" />
+                    Chat dengan Maya
+                  </Button>
+                </Link>
+                <Link href="/compare">
+                  <Button size="lg" variant="outline" className="text-lg px-10 py-6 h-auto w-full sm:w-auto border-2 border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900 transform hover:scale-105 transition-all">
+                    <BarChart3 className="w-6 h-6 mr-2" />
+                    Bandingkan Produk
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          {/* What Maya Can Do */}
+          <div className="max-w-6xl mx-auto mb-20">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+                Apa yang Bisa Maya Lakukan? 🤔
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">
+                Maya siap membantu Anda dengan berbagai kebutuhan asuransi
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur">
+                <CardHeader className="pb-3">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <CardTitle className="text-lg">Jawab Pertanyaan</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm">
+                    "Maya, apa itu comprehensive?" <br/>
+                    "Bagaimana cara klaim asuransi?"
+                  </CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur">
+                <CardHeader className="pb-3">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <CardTitle className="text-lg">Saran Personal</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm">
+                    Rekomendasi berdasarkan kendaraan, lokasi, dan kebutuhan Anda
+                  </CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur">
+                <CardHeader className="pb-3">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <CardTitle className="text-lg">Bandingkan Produk</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm">
+                    Analisis detail perbedaan TLO vs Comprehensive
+                  </CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur">
+                <CardHeader className="pb-3">
+                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <FileText className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <CardTitle className="text-lg">Citasi Akurat</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm">
+                    Setiap jawaban dilengkapi referensi dokumen resmi
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Key Features */}
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+                Kenapa Pilih Maya? ✨
+              </h3>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <h4 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  Jawaban Terpercaya
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Semua jawaban Maya berdasarkan dokumen RIPLAY resmi - tanpa spekulasi, hanya fakta yang akurat.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Clock className="w-8 h-8 text-white" />
+                </div>
+                <h4 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  24/7 Siap Membantu
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Maya tersedia kapan saja Anda butuhkan. Tidak ada antrian, tidak ada jam kerja.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <h4 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  Privasi Terjamin
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Data dan percakapan Anda tetap di perangkat Anda. Privasi 100% terlindungi.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Final CTA */}
+          <div className="max-w-2xl mx-auto text-center mt-20">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
+              <h3 className="text-2xl font-bold mb-4">
+                Siap Bertemu Maya? 🚀
+              </h3>
+              <p className="mb-6 text-blue-100">
+                Mulai percakapan pertama Anda dan rasakan pengalaman memahami asuransi yang berbeda!
+              </p>
+              <Link href="/chat">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8 py-3 shadow-lg transform hover:scale-105 transition-all">
+                  Mulai Chat Sekarang →
+                </Button>
+              </Link>
+            </div>
+            
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-8">
+              Panduan asuransi bertenaga AI • Selalu verifikasi keputusan penting dengan profesional berlisensi
+            </p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+      <DisclaimerFooter />
     </div>
   );
 }
