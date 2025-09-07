@@ -49,7 +49,7 @@ export default function Home() {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                 <Link href="/chat">
-                  <Button size="lg" className="text-lg px-10 py-6 h-auto w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-300 transform hover:scale-105 transition-all">
+                  <Button size="lg" className="text-lg px-10 py-6 h-auto w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-300 transform hover:scale-105 transition-all text-white">
                     <MessageSquare className="w-6 h-6 mr-2" />
                     Chat dengan Maya
                   </Button>
