@@ -3,10 +3,28 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChatMessage, UserProfile } from "@/lib/types";
+import { ChatMessage } from "@/lib/types";
 import { quickTemplates } from "@/lib/constants";
-import { Menu, Trash2, MessageSquare, Send } from "lucide-react";
+import { Menu, Trash2, Send } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
+
+// Function to render message content with simple bold support
+function renderMessageContent(content: string) {
+  const parts = content.split(/(\*\*[^*]+\*\*)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      // Remove the ** markers and render as bold
+      const boldText = part.slice(2, -2);
+      return (
+        <span key={index} className="font-medium">
+          {boldText}
+        </span>
+      );
+    }
+    return part;
+  });
+}
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -202,7 +220,9 @@ export default function ChatPage() {
                           ? 'bg-blue-600 text-white ml-4 sm:ml-12' 
                           : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white mr-4 sm:mr-12'
                       }`}>
-                        <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                          {renderMessageContent(message.content)}
+                        </div>
                         
                         {message.citations && message.citations.length > 0 && (
                           <div className="mt-3 pt-2 border-t border-gray-300 dark:border-gray-600">
@@ -210,9 +230,25 @@ export default function ChatPage() {
                             <div className="flex flex-wrap gap-2">
                               {message.citations.map((citation, index) => (
                                 <div key={index} className="text-xs bg-white/10 rounded px-2 py-1 inline-block">
-                                  <span className="font-medium">{citation.docTitle}</span>
-                                  {citation.section && (
-                                    <span className="opacity-75 ml-1">• {citation.section}</span>
+                                  {citation.source ? (
+                                    <a
+                                      href={citation.source}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="hover:underline cursor-pointer"
+                                    >
+                                      <span className="font-medium">{citation.docTitle}</span>
+                                      {citation.section && (
+                                        <span className="opacity-75 ml-1">• {citation.section}</span>
+                                      )}
+                                    </a>
+                                  ) : (
+                                    <>
+                                      <span className="font-medium">{citation.docTitle}</span>
+                                      {citation.section && (
+                                        <span className="opacity-75 ml-1">• {citation.section}</span>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                               ))}

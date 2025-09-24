@@ -33,49 +33,66 @@ export async function POST(request: NextRequest) {
       .slice(0, 6) // Limit to 3-6 excerpts as per sequence diagram
       .map(
         (snippet) =>
-          `[${snippet.docTitle} - ${snippet.section}]\n${snippet.content}\nSource: ${snippet.source}`
+          `**${snippet.docTitle}**\n${snippet.content}`
       )
       .join("\n\n---\n\n");
 
     // Build Maya persona with conversation memory
     const recentConversation = formatRecentConversation(conversationHistory);
     
-    const systemPrompt = `Saya Maya, konsultan asuransi berpengalaman yang ramah dan dapat dipercaya. Saya berbicara dengan bahasa yang mudah dipahami, memberikan penjelasan yang terstruktur, dan selalu mengutamakan akurasi informasi. Saya senang membantu memahami asuransi dengan pendekatan yang personal dan empati.
+    const systemPrompt = `Saya Maya, konsultan asuransi berpengalaman yang ramah dan dapat dipercaya. Saya berbicara dengan bahasa yang mudah dipahami dan natural, seperti berbincang dengan teman. Saya selalu mengutamakan akurasi informasi dan memberikan penjelasan yang jelas.
 
 KEPRIBADIAN SAYA:
 - Ramah dan sabar dalam menjelaskan
-- Detail namun mudah dipahami  
-- Menggunakan contoh konkret
-- Selalu mengutip sumber dokumen
+- Bicara natural dan mudah dipahami
+- Menggunakan contoh konkret dari kehidupan sehari-hari
 - Menyebutkan nama produk spesifik
+- Menghindari pengulangan yang tidak perlu
 
-ATURAN KETAT:
+ATURAN PENTING:
 1. Jawab HANYA berdasarkan DOKUMEN di bawah ini
-2. SELALU cantumkan sumber dengan nama dokumen dan bagian yang tepat
-3. JANGAN spekulasi atau menambah informasi di luar dokumen
-4. Jika informasi tidak ada di dokumen, katakan "Maaf, informasi ini tidak tersedia dalam dokumen resmi yang saya miliki"
-5. Gunakan bahasa Indonesia yang natural dan hangat
+2. Jangan menyebutkan nama dokumen dalam teks jawaban - nama dokumen sudah ditampilkan sebagai **bold text**
+3. Gunakan referensi natural seperti "menurut dokumen resmi", "berdasarkan informasi yang saya miliki"
+4. JANGAN spekulasi atau menambah informasi di luar dokumen
+5. Jika informasi tidak ada di dokumen, katakan "Maaf, informasi ini tidak tersedia dalam dokumen resmi yang saya miliki"
+6. Gunakan bahasa Indonesia yang natural dan hangat seperti percakapan biasa
 
 MEMORI PERCAKAPAN:
 ${JSON.stringify(conversationMemory, null, 2)}
 
+PANDUAN ANTI-REPETISI:
+${conversationMemory.explainedConcepts.length > 0 ?
+  `- JANGAN ULANGI topik ini: ${conversationMemory.explainedConcepts.join(', ')}
+- Berikan informasi BARU dan detail yang BELUM dijelaskan
+- Hindari menyebutkan hal yang sama lagi` :
+  '- Percakapan baru - mulai dengan ramah'
+}
+${conversationMemory.disclaimerShown ? '- Disclaimer sudah pernah disebutkan - JANGAN ulangi' : '- Tambahkan disclaimer jika relevan'}
+
+FOKUS RESPONS:
+- Jawab pertanyaan spesifik user
+- Berikan detail baru yang belum disebutkan
+- Jangan mengulang paragraf yang sama
+
 ${recentConversation ? `PERCAKAPAN TERAKHIR:
 ${recentConversation}` : ""}
 
-PROFIL PENGGUNA (untuk personalisasi):
+PROFIL PENGGUNA:
 ${
   profile
     ? `- Kendaraan: ${getVehicleTypeLabel(profile.vehicleType)} (${profile.vehicleYear})
 - Lokasi: ${getCityLabel(profile.city)}
 - Penggunaan: ${getUsageTypeLabel(profile.usageType)}
-- Area rawan banjir: ${profile.floodRisk ? "Ya" : "Tidak"}`
-    : "Belum ada profil"
+- Area rawan banjir: ${profile.floodRisk ? "Ya" : "Tidak"}
+
+Berikan saran yang relevan dengan profil ini, terutama ${profile.floodRisk ? 'perlindungan banjir' : 'perlindungan umum'} untuk daerah ${profile.city}.`
+    : "Belum ada profil - berikan informasi umum"
 }
 
 DOKUMEN SUMBER:
 ${context}
 
-Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan dengan cara Maya yang ramah dan informatif. Sertakan kutipan dokumen yang tepat.`;
+Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan dengan cara Maya yang ramah dan natural. Berbicara seperti konsultan asuransi yang berpengalaman tapi santai dan mudah dipahami.`;
 
     // Send to Groq/Llama
     const completion = await groq.chat.completions.create({
@@ -189,7 +206,6 @@ async function extractDocumentSnippetsFromPython(
 
 // Removed unused PDF processing functions - now using Python search service
 
-
 function validateResponse(
   response: string,
   snippets: DocumentSnippet[]
@@ -209,9 +225,6 @@ function validateResponse(
     "perkiraan",
   ];
 
-  const hasUncertainty = uncertaintyWords.some((word) =>
-    response.toLowerCase().includes(word.toLowerCase())
-  );
 
   // Only block if response contains multiple uncertainty words or is very uncertain
   const uncertaintyCount = uncertaintyWords.filter((word) =>
@@ -248,17 +261,52 @@ function extractCitations(
   const seenCitations = new Set<string>();
 
   // Extract citations based on document references in response
+  // Since Maya may not mention exact document names, check for key terms or include all used snippets
+  const responseWords = response.toLowerCase().split(/\s+/);
+
   snippets.forEach((snippet) => {
-    if (response.includes(snippet.docTitle)) {
+    const docWords = snippet.docTitle.toLowerCase().split(/\s+/);
+    const responseText = response.toLowerCase();
+    const docTitle = snippet.docTitle.toLowerCase();
+
+    // Filter out irrelevant vehicle types
+    const isCarInsurance = responseText.includes('mobil') || responseText.includes('autocillin') || responseText.includes('car');
+    const isMotorcycleDoc = docTitle.includes('motor') || docTitle.includes('motopro');
+
+    const isMotorcycleInsurance = responseText.includes('motor') && !responseText.includes('mobil');
+    const isCarDoc = docTitle.includes('autocillin') || docTitle.includes('mobil');
+
+    // Skip irrelevant documents
+    if ((isCarInsurance && isMotorcycleDoc) || (isMotorcycleInsurance && isCarDoc)) {
+      return; // Skip this document
+    }
+
+    // More selective citation logic
+    const hasDocReference =
+      response.includes(snippet.docTitle) || // Exact document name mentioned
+      docWords.some(word => word.length > 4 && responseText.includes(word)) || // Key words from doc title
+      snippet.content.toLowerCase().split(/\s+/).some(word =>
+        word.length > 6 && responseText.includes(word) // Specific content words mentioned
+      );
+
+    if (hasDocReference) {
       // Create a unique key to avoid duplicates
       const citationKey = `${snippet.docTitle}-${snippet.section}`;
-      
+
       // Only add if we haven't seen this citation before
       if (!seenCitations.has(citationKey)) {
+        // Clean up snippet content for display only
+        const cleanSnippet = snippet.content
+          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+          .replace(/([a-zA-Z])\s+([a-zA-Z])/g, '$1$2') // Remove spaces between letters
+          .trim()
+          .slice(0, 150) + "...";
+
         citations.push({
           docTitle: snippet.docTitle,
           section: snippet.section,
-          snippet: snippet.content.slice(0, 150) + "...",
+          snippet: cleanSnippet,
+          source: snippet.source,
         });
         seenCitations.add(citationKey);
       }
@@ -275,6 +323,9 @@ interface ConversationMemory {
   lastProductMentioned: string | null;
   conversationTone: string;
   keyWords: string[];
+  explainedConcepts: string[];
+  currentFocus: string | null;
+  disclaimerShown: boolean;
 }
 
 function buildConversationMemory(conversationHistory: ChatMessage[], profile: UserProfile | null): ConversationMemory {
@@ -283,7 +334,10 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
     topicsDiscussed: [],
     lastProductMentioned: null,
     conversationTone: "friendly_professional",
-    keyWords: []
+    keyWords: [],
+    explainedConcepts: [],
+    currentFocus: null,
+    disclaimerShown: false
   };
 
   // Extract topics and products from recent conversation
@@ -307,6 +361,33 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
     }
   });
 
+  // Track explained concepts to avoid repetition
+  const concepts = [
+    'autocillin', 'comprehensive', 'perluasan perlindungan', 'zurich care',
+    'premi calculation', 'banjir protection', 'bengkel atpm', 'fasilitas bengkel',
+    'perlindungan dari banjir', 'angin topan', 'gempa bumi'
+  ];
+  const assistantMessages = recentMessages.filter(msg => msg.role === 'assistant').map(msg => msg.content.toLowerCase());
+
+  concepts.forEach(concept => {
+    if (assistantMessages.some(msg => msg.includes(concept.toLowerCase()))) {
+      memory.explainedConcepts.push(concept);
+    }
+  });
+
+  // Check if disclaimer was already shown
+  memory.disclaimerShown = assistantMessages.some(msg =>
+    msg.includes('informasi umum') && msg.includes('kontrak')
+  );
+
+  // Determine current focus based on recent user questions
+  const lastUserMessage = conversationHistory.filter(msg => msg.role === 'user').slice(-1)[0]?.content.toLowerCase();
+  if (lastUserMessage) {
+    if (lastUserMessage.includes('premi')) memory.currentFocus = 'premium';
+    else if (lastUserMessage.includes('manfaat') || lastUserMessage.includes('coverage')) memory.currentFocus = 'benefits';
+    else if (lastUserMessage.includes('klaim')) memory.currentFocus = 'claims';
+  }
+
   // Extract key words for context
   const keyWords = allText.match(/\b\w{4,}\b/g) || [];
   memory.keyWords = [...new Set(keyWords)].slice(0, 10); // Top 10 unique keywords
@@ -319,6 +400,36 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
 
 function enhanceQueryWithContext(currentMessage: string, memory: ConversationMemory): string {
   let enhancedQuery = currentMessage;
+  const messageLower = currentMessage.toLowerCase();
+
+  // Detect vehicle type from message and enhance accordingly
+  if (messageLower.includes('mobil') || messageLower.includes('car')) {
+    enhancedQuery += ' asuransi mobil autocillin car automotive kendaraan bermotor roda empat';
+    // Exclude motorcycle terms
+    enhancedQuery += ' -motor -motorcycle -sepeda -roda dua';
+  } else if (messageLower.includes('motor') || messageLower.includes('motorcycle') || messageLower.includes('sepeda motor')) {
+    enhancedQuery += ' asuransi motor motopro motorcycle sepeda motor roda dua';
+    // Exclude car terms
+    enhancedQuery += ' -mobil -car -automotive -autocillin';
+  }
+
+  // Add user profile context if available
+  if (memory.userProfile) {
+    const profile = memory.userProfile;
+    if (profile.vehicleType === 'car') {
+      enhancedQuery += ' mobil car autocillin automotive';
+    } else if (profile.vehicleType === 'motorcycle') {
+      enhancedQuery += ' motor motorcycle motopro sepeda motor';
+    }
+
+    if (profile.floodRisk) {
+      enhancedQuery += ' banjir flood perluasan perlindungan alam';
+    }
+
+    if (profile.city) {
+      enhancedQuery += ` ${profile.city}`;
+    }
+  }
 
   // Add context from memory
   if (memory.lastProductMentioned) {

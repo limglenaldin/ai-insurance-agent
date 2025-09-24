@@ -21,6 +21,7 @@ export interface Citation {
   docTitle: string;
   section: string;
   snippet: string;
+  source?: string;
 }
 
 // Product Types (Database Schema)
