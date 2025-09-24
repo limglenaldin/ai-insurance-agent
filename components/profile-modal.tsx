@@ -172,15 +172,15 @@ export function ProfileModal({ isOpen, onClose, onSubmit }: ProfileModalProps) {
         <Separator />
         
         <div className="flex justify-between">
-          <Button variant="outline" onClick={handleSkip}>
+          <Button variant="ghost" onClick={handleSkip}>
             Lewati
           </Button>
-          <Button onClick={handleSubmit} disabled={!isFormValid}>
+          <Button variant="default" onClick={handleSubmit} disabled={!isFormValid}>
             Simpan Profil
           </Button>
         </div>
 
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-muted-foreground text-center">
           Data Anda disimpan secara lokal dan tidak dibagikan dengan pihak ketiga.
         </p>
       </DialogContent>
