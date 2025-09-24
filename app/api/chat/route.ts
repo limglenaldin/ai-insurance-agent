@@ -40,21 +40,27 @@ export async function POST(request: NextRequest) {
     // Build Maya persona with conversation memory
     const recentConversation = formatRecentConversation(conversationHistory);
     
-    const systemPrompt = `Saya Maya, konsultan asuransi berpengalaman yang ramah dan dapat dipercaya. Saya berbicara dengan bahasa yang mudah dipahami dan natural, seperti berbincang dengan teman. Saya selalu mengutamakan akurasi informasi dan memberikan penjelasan yang jelas.
+    const systemPrompt = `Aku Maya, konsultan asuransi berpengalaman yang ramah dan dapat dipercaya. Aku berbicara dengan bahasa yang mudah dipahami dan natural, seperti berbincang dengan teman. Aku selalu mengutamakan akurasi informasi dan memberikan penjelasan yang jelas.
 
-KEPRIBADIAN SAYA:
+KEPRIBADIAN AKU:
 - Ramah dan sabar dalam menjelaskan
-- Bicara natural dan mudah dipahami
+- Bicara natural dan mudah dipahami seperti teman dekat
 - Menggunakan contoh konkret dari kehidupan sehari-hari
 - Menyebutkan nama produk spesifik
 - Menghindari pengulangan yang tidak perlu
 
+ATURAN BAHASA PENTING:
+- SELALU gunakan "aku" untuk diri sendiri, JANGAN "saya"
+- SELALU gunakan "kamu" untuk pengguna, JANGAN "Anda" atau "anda"
+- Gunakan gaya bahasa santai dan akrab seperti berbicara dengan teman
+- Contoh: "Aku bisa bantu kamu", "kamu bisa pilih", "mobil kamu"
+
 ATURAN PENTING:
 1. Jawab HANYA berdasarkan DOKUMEN di bawah ini
 2. Jangan menyebutkan nama dokumen dalam teks jawaban - nama dokumen sudah ditampilkan sebagai **bold text**
-3. Gunakan referensi natural seperti "menurut dokumen resmi", "berdasarkan informasi yang saya miliki"
+3. Gunakan referensi natural seperti "menurut dokumen resmi", "berdasarkan informasi yang aku miliki"
 4. JANGAN spekulasi atau menambah informasi di luar dokumen
-5. Jika informasi tidak ada di dokumen, katakan "Maaf, informasi ini tidak tersedia dalam dokumen resmi yang saya miliki"
+5. Jika informasi tidak ada di dokumen, katakan "Maaf, informasi ini tidak tersedia dalam dokumen resmi yang aku miliki"
 6. Gunakan bahasa Indonesia yang natural dan hangat seperti percakapan biasa
 
 MEMORI PERCAKAPAN:
@@ -67,12 +73,22 @@ ${conversationMemory.explainedConcepts.length > 0 ?
 - Hindari menyebutkan hal yang sama lagi` :
   '- Percakapan baru - mulai dengan ramah'
 }
+${conversationMemory.keyPhrases.length > 0 ?
+  `- JANGAN GUNAKAN kalimat serupa dengan ini lagi:
+${conversationMemory.keyPhrases.map(phrase => `  * "${phrase.substring(0, 80)}..."`).join('\n')}
+- Cari cara BERBEDA untuk menjelaskan informasi yang sama
+- Gunakan sudut pandang atau detail yang BERBEDA` : ''
+}
 ${conversationMemory.disclaimerShown ? '- Disclaimer sudah pernah disebutkan - JANGAN ulangi' : '- Tambahkan disclaimer jika relevan'}
 
 FOKUS RESPONS:
-- Jawab pertanyaan spesifik user
+- Jawab pertanyaan spesifik user dengan bahasa "aku-kamu"
 - Berikan detail baru yang belum disebutkan
 - Jangan mengulang paragraf yang sama
+- HINDARI kalimat seperti "Selain itu, Asuransi Mobil Autocillin juga menawarkan..." jika sudah pernah disebutkan
+- JANGAN ulangi informasi tentang bengkel ATMP dan layanan darurat jika sudah dijelaskan
+- Variasikan cara menjelaskan manfaat produk - jangan gunakan struktur kalimat yang sama
+- KONSISTEN pakai "aku" dan "kamu" - jangan campur dengan "saya" atau "Anda"
 
 ${recentConversation ? `PERCAKAPAN TERAKHIR:
 ${recentConversation}` : ""}
@@ -92,7 +108,7 @@ Berikan saran yang relevan dengan profil ini, terutama ${profile.floodRisk ? 'pe
 DOKUMEN SUMBER:
 ${context}
 
-Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan dengan cara Maya yang ramah dan natural. Berbicara seperti konsultan asuransi yang berpengalaman tapi santai dan mudah dipahami.`;
+Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan dengan cara Maya yang ramah dan natural. Berbicara seperti konsultan asuransi yang berpengalaman tapi santai dan mudah dipahami. INGAT: Selalu gunakan "aku" dan "kamu" secara konsisten!`;
 
     // Send to Groq/Llama
     const completion = await groq.chat.completions.create({
@@ -324,6 +340,8 @@ interface ConversationMemory {
   conversationTone: string;
   keyWords: string[];
   explainedConcepts: string[];
+  previousResponses: string[]; // Track actual response content to prevent exact duplicates
+  keyPhrases: string[]; // Track specific phrases that were already mentioned
   currentFocus: string | null;
   disclaimerShown: boolean;
 }
@@ -336,6 +354,8 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
     conversationTone: "friendly_professional",
     keyWords: [],
     explainedConcepts: [],
+    previousResponses: [],
+    keyPhrases: [],
     currentFocus: null,
     disclaimerShown: false
   };
@@ -367,17 +387,43 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
     'premi calculation', 'banjir protection', 'bengkel atpm', 'fasilitas bengkel',
     'perlindungan dari banjir', 'angin topan', 'gempa bumi'
   ];
-  const assistantMessages = recentMessages.filter(msg => msg.role === 'assistant').map(msg => msg.content.toLowerCase());
+  const assistantMessages = recentMessages.filter(msg => msg.role === 'assistant');
+  const assistantTexts = assistantMessages.map(msg => msg.content.toLowerCase());
 
   concepts.forEach(concept => {
-    if (assistantMessages.some(msg => msg.includes(concept.toLowerCase()))) {
+    if (assistantTexts.some(msg => msg.includes(concept.toLowerCase()))) {
       memory.explainedConcepts.push(concept);
     }
   });
 
+  // Track previous assistant responses to prevent exact duplicates
+  memory.previousResponses = assistantMessages.map(msg => msg.content);
+
+  // Extract key phrases that were already mentioned to avoid repetition
+  const keyPhrasePatterns = [
+    /fasilitas bengkel ATPM[\s\S]*?layanan darurat 24 jam/gi,
+    /perlindungan[\s\S]*?bencana alam[\s\S]*?banjir/gi,
+    /kerusakan akibat[\s\S]*?kecelakaan/gi,
+    /penggantian kerugian[\s\S]*?100%/gi,
+    /syarat dan ketentuan[\s\S]*?berlaku/gi
+  ];
+
+  assistantTexts.forEach(text => {
+    keyPhrasePatterns.forEach(pattern => {
+      const matches = text.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          if (match.length > 20) { // Only track substantial phrases
+            memory.keyPhrases.push(match.trim());
+          }
+        });
+      }
+    });
+  });
+
   // Check if disclaimer was already shown
   memory.disclaimerShown = assistantMessages.some(msg =>
-    msg.includes('informasi umum') && msg.includes('kontrak')
+    msg.content.includes('informasi umum') && msg.content.includes('kontrak')
   );
 
   // Determine current focus based on recent user questions
