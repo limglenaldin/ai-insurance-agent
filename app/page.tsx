@@ -1,8 +1,23 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { DisclaimerFooter } from "@/components/disclaimer-footer";
-import { MessageSquare, BarChart3, Shield, Clock, FileText, Zap, CheckCircle, Users } from "lucide-react";
+import {
+  MessageSquare,
+  BarChart3,
+  Shield,
+  Clock,
+  FileText,
+  Zap,
+  CheckCircle,
+  Users,
+} from "lucide-react";
 
 export default function Home() {
   return (
@@ -17,45 +32,61 @@ export default function Home() {
                 <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
                   Miria
                 </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400">Asisten AI dari InsurAI</p>
+                <p className="text-lg text-gray-600 dark:text-gray-400">
+                  Asisten AI dari InsurAI
+                </p>
               </div>
-              
+
               <div className="max-w-4xl mx-auto mb-8">
                 <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
                   Temukan Asuransi yang Tepat dengan Miria! 🎯
                 </h2>
                 <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-                  Asisten AI yang ramah dan berpengalaman untuk membantu Anda memahami produk asuransi dengan mudah. 
-                  Miria memberikan jawaban yang akurat berdasarkan dokumen resmi RIPLAY.
+                  Asisten AI yang ramah dan berpengalaman untuk membantu Anda
+                  memahami produk asuransi dengan mudah. Miria memberikan
+                  jawaban yang akurat berdasarkan dokumen resmi RIPLAY.
                 </p>
-                
+
                 {/* Value Proposition */}
                 <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm">
                   <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span className="text-gray-700 dark:text-gray-300">100% Gratis</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      100% Gratis
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
                     <Shield className="w-4 h-4 text-blue-500" />
-                    <span className="text-gray-700 dark:text-gray-300">Data Aman</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Data Aman
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
                     <Zap className="w-4 h-4 text-yellow-500" />
-                    <span className="text-gray-700 dark:text-gray-300">Respon Instan</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Respon Instan
+                    </span>
                   </div>
                 </div>
               </div>
-              
+
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                 <Link href="/chat">
-                  <Button size="lg" className="text-lg px-10 py-6 h-auto w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-300 transform hover:scale-105 transition-all text-white">
+                  <Button
+                    size="lg"
+                    className="text-lg px-10 py-6 h-auto w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-300 transform hover:scale-105 transition-all text-white"
+                  >
                     <MessageSquare className="w-6 h-6 mr-2" />
                     Chat dengan Miria
                   </Button>
                 </Link>
                 <Link href="/compare">
-                  <Button size="lg" variant="outline" className="text-lg px-10 py-6 h-auto w-full sm:w-auto border-2 border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900 transform hover:scale-105 transition-all">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-10 py-6 h-auto w-full sm:w-auto border-2 border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900 transform hover:scale-105 transition-all"
+                  >
                     <BarChart3 className="w-6 h-6 mr-2" />
                     Bandingkan Produk
                   </Button>
@@ -74,7 +105,7 @@ export default function Home() {
                 Miria siap membantu Anda dengan berbagai kebutuhan asuransi
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur">
                 <CardHeader className="pb-3">
@@ -85,8 +116,8 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-sm">
-                    "Miria, apa itu comprehensive?" <br/>
-                    "Bagaimana cara klaim asuransi?"
+                    &quot;Miria, apa itu comprehensive?&quot; <br />
+                    &quot;Bagaimana cara klaim asuransi?&quot;
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -100,7 +131,8 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-sm">
-                    Rekomendasi berdasarkan kendaraan, lokasi, dan kebutuhan Anda
+                    Rekomendasi berdasarkan kendaraan, lokasi, dan kebutuhan
+                    Anda
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -142,7 +174,7 @@ export default function Home() {
                 Kenapa Pilih Miria? ✨
               </h3>
             </div>
-            
+
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -152,7 +184,8 @@ export default function Home() {
                   Jawaban Terpercaya
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Semua jawaban Miria berdasarkan dokumen RIPLAY resmi - tanpa spekulasi, hanya fakta yang akurat.
+                  Semua jawaban Miria berdasarkan dokumen RIPLAY resmi - tanpa
+                  spekulasi, hanya fakta yang akurat.
                 </p>
               </div>
 
@@ -164,7 +197,8 @@ export default function Home() {
                   24/7 Siap Membantu
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Miria tersedia kapan saja Anda butuhkan. Tidak ada antrian, tidak ada jam kerja.
+                  Miria tersedia kapan saja Anda butuhkan. Tidak ada antrian,
+                  tidak ada jam kerja.
                 </p>
               </div>
 
@@ -176,7 +210,8 @@ export default function Home() {
                   Privasi Terjamin
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Data dan percakapan Anda tetap di perangkat Anda. Privasi 100% terlindungi.
+                  Data dan percakapan Anda tetap di perangkat Anda. Privasi 100%
+                  terlindungi.
                 </p>
               </div>
             </div>
@@ -189,17 +224,22 @@ export default function Home() {
                 Siap Bertemu Miria? 🚀
               </h3>
               <p className="mb-6 text-blue-100">
-                Mulai percakapan pertama Anda dan rasakan pengalaman memahami asuransi yang berbeda!
+                Mulai percakapan pertama Anda dan rasakan pengalaman memahami
+                asuransi yang berbeda!
               </p>
               <Link href="/chat">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8 py-3 shadow-lg transform hover:scale-105 transition-all">
+                <Button
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8 py-3 shadow-lg transform hover:scale-105 transition-all"
+                >
                   Mulai Chat Sekarang →
                 </Button>
               </Link>
             </div>
-            
+
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-8">
-              Panduan asuransi bertenaga AI • Selalu verifikasi keputusan penting dengan profesional berlisensi
+              Panduan asuransi bertenaga AI • Selalu verifikasi keputusan
+              penting dengan profesional berlisensi
             </p>
           </div>
         </div>

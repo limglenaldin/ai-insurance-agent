@@ -1,4 +1,4 @@
-import { UserProfile, ChatMessage, Citation } from "./types";
+import { UserProfile, ChatMessage } from "./types";
 import { STORAGE_KEYS } from "./constants";
 
 export class LocalStorageManager {
@@ -49,11 +49,11 @@ export class LocalStorageManager {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.CHAT_HISTORY);
       if (!saved) return [];
-      
+
       const parsed = JSON.parse(saved);
       return parsed.map((msg: ChatMessage) => ({
         ...msg,
-        timestamp: new Date(msg.timestamp)
+        timestamp: new Date(msg.timestamp),
       }));
     } catch (error) {
       console.error("Failed to get chat history from localStorage:", error);
@@ -85,16 +85,18 @@ export class LocalStorageManager {
   // Check if user has completed profile setup
   static hasProfile(): boolean {
     const profile = this.getProfile();
-    return profile !== null && 
-           profile.vehicleType !== "" && 
-           profile.city !== "" && 
-           profile.usageType !== "";
+    return (
+      profile !== null &&
+      profile.vehicleType !== "" &&
+      profile.city !== "" &&
+      profile.usageType !== ""
+    );
   }
 
   // Get storage size info
   static getStorageInfo(): { used: number; available: number } {
     if (!this.isClient) return { used: 0, available: 0 };
-    
+
     try {
       let used = 0;
       for (const key in localStorage) {
@@ -102,10 +104,10 @@ export class LocalStorageManager {
           used += localStorage.getItem(key)!.length;
         }
       }
-      
+
       // Rough estimate of localStorage limit (most browsers: 5-10MB)
       const available = 5 * 1024 * 1024; // 5MB
-      
+
       return { used, available };
     } catch (error) {
       console.error("Failed to get storage info:", error);
@@ -117,32 +119,36 @@ export class LocalStorageManager {
   static exportData(): string {
     const profile = this.getProfile();
     const chatHistory = this.getChatHistory();
-    
-    return JSON.stringify({
-      profile,
-      chatHistory,
-      exportDate: new Date().toISOString(),
-      version: "1.0"
-    }, null, 2);
+
+    return JSON.stringify(
+      {
+        profile,
+        chatHistory,
+        exportDate: new Date().toISOString(),
+        version: "1.0",
+      },
+      null,
+      2
+    );
   }
 
   // Import data from backup
   static importData(jsonData: string): boolean {
     try {
       const data = JSON.parse(jsonData);
-      
+
       if (data.profile) {
         this.saveProfile(data.profile);
       }
-      
+
       if (data.chatHistory && Array.isArray(data.chatHistory)) {
         const messages = data.chatHistory.map((msg: ChatMessage) => ({
           ...msg,
-          timestamp: new Date(msg.timestamp)
+          timestamp: new Date(msg.timestamp),
         }));
         this.saveChatHistory(messages);
       }
-      
+
       return true;
     } catch (error) {
       console.error("Failed to import data:", error);

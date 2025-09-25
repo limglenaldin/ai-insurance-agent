@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import {
   UserProfile,
-  Product,
   DocumentSnippet,
   Citation,
   ChatMessage,
@@ -12,7 +11,6 @@ import {
   getCityLabel,
   getUsageTypeLabel,
 } from "@/lib/utils";
-import { dbHelpers } from "@/lib/db";
 
 // No longer using pdfjs-dist - using Python service instead
 
@@ -192,21 +190,6 @@ Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan d
   }
 }
 
-async function getRelevantProducts(
-  profile: UserProfile | null
-): Promise<Product[]> {
-  if (!profile) {
-    return await dbHelpers.getProducts();
-  }
-
-  // Filter based on vehicle type
-  const vehicleKind = ["car", "motorcycle"].includes(profile.vehicleType)
-    ? profile.vehicleType
-    : undefined;
-
-  return await dbHelpers.getProducts({ vehicleKind });
-}
-
 async function extractDocumentSnippetsFromPython(
   query: string,
   profile: UserProfile | null
@@ -332,10 +315,6 @@ function extractCitations(
 ): Citation[] {
   const citations: Citation[] = [];
   const seenCitations = new Set<string>();
-
-  // Extract citations based on document references in response
-  // Since Miria may not mention exact document names, check for key terms or include all used snippets
-  const responseWords = response.toLowerCase().split(/\s+/);
 
   snippets.forEach((snippet) => {
     const docWords = snippet.docTitle.toLowerCase().split(/\s+/);
