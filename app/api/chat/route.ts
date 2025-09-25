@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
-import { UserProfile, Product, DocumentSnippet, Citation, ChatMessage } from "@/lib/types";
-import { getVehicleTypeLabel, getCityLabel, getUsageTypeLabel } from "@/lib/utils";
+import {
+  UserProfile,
+  Product,
+  DocumentSnippet,
+  Citation,
+  ChatMessage,
+} from "@/lib/types";
+import {
+  getVehicleTypeLabel,
+  getCityLabel,
+  getUsageTypeLabel,
+} from "@/lib/utils";
 import { dbHelpers } from "@/lib/db";
 
 // No longer using pdfjs-dist - using Python service instead
@@ -22,24 +32,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Build conversation memory and enhance query
-    const conversationMemory = buildConversationMemory(conversationHistory, profile);
-    const contextualQuery = enhanceQueryWithContext(message, conversationMemory);
+    const conversationMemory = buildConversationMemory(
+      conversationHistory,
+      profile
+    );
+    const contextualQuery = enhanceQueryWithContext(
+      message,
+      conversationMemory
+    );
 
     // Extract document content using Python search service with enhanced query
-    const documentSnippets = await extractDocumentSnippetsFromPython(contextualQuery, profile);
+    const documentSnippets = await extractDocumentSnippetsFromPython(
+      contextualQuery,
+      profile
+    );
 
     // Compose grounded prompt
     const context = documentSnippets
       .slice(0, 6) // Limit to 3-6 excerpts as per sequence diagram
-      .map(
-        (snippet) =>
-          `**${snippet.docTitle}**\n${snippet.content}`
-      )
+      .map((snippet) => `**${snippet.docTitle}**\n${snippet.content}`)
       .join("\n\n---\n\n");
 
     // Build Maya persona with conversation memory
     const recentConversation = formatRecentConversation(conversationHistory);
-    
+
     const systemPrompt = `Aku Maya, konsultan asuransi berpengalaman yang ramah dan dapat dipercaya. Aku berbicara dengan bahasa yang mudah dipahami dan natural, seperti berbincang dengan teman. Aku selalu mengutamakan akurasi informasi dan memberikan penjelasan yang jelas.
 
 KEPRIBADIAN AKU:
@@ -67,19 +83,30 @@ MEMORI PERCAKAPAN:
 ${JSON.stringify(conversationMemory, null, 2)}
 
 PANDUAN ANTI-REPETISI:
-${conversationMemory.explainedConcepts.length > 0 ?
-  `- JANGAN ULANGI topik ini: ${conversationMemory.explainedConcepts.join(', ')}
+${
+  conversationMemory.explainedConcepts.length > 0
+    ? `- JANGAN ULANGI topik ini: ${conversationMemory.explainedConcepts.join(
+        ", "
+      )}
 - Berikan informasi BARU dan detail yang BELUM dijelaskan
-- Hindari menyebutkan hal yang sama lagi` :
-  '- Percakapan baru - mulai dengan ramah'
+- Hindari menyebutkan hal yang sama lagi`
+    : "- Percakapan baru - mulai dengan ramah"
 }
-${conversationMemory.keyPhrases.length > 0 ?
-  `- JANGAN GUNAKAN kalimat serupa dengan ini lagi:
-${conversationMemory.keyPhrases.map(phrase => `  * "${phrase.substring(0, 80)}..."`).join('\n')}
+${
+  conversationMemory.keyPhrases.length > 0
+    ? `- JANGAN GUNAKAN kalimat serupa dengan ini lagi:
+${conversationMemory.keyPhrases
+  .map((phrase) => `  * "${phrase.substring(0, 80)}..."`)
+  .join("\n")}
 - Cari cara BERBEDA untuk menjelaskan informasi yang sama
-- Gunakan sudut pandang atau detail yang BERBEDA` : ''
+- Gunakan sudut pandang atau detail yang BERBEDA`
+    : ""
 }
-${conversationMemory.disclaimerShown ? '- Disclaimer sudah pernah disebutkan - JANGAN ulangi' : '- Tambahkan disclaimer jika relevan'}
+${
+  conversationMemory.disclaimerShown
+    ? "- Disclaimer sudah pernah disebutkan - JANGAN ulangi"
+    : "- Tambahkan disclaimer jika relevan"
+}
 
 FOKUS RESPONS:
 - Jawab pertanyaan spesifik user dengan bahasa "aku-kamu"
@@ -90,18 +117,26 @@ FOKUS RESPONS:
 - Variasikan cara menjelaskan manfaat produk - jangan gunakan struktur kalimat yang sama
 - KONSISTEN pakai "aku" dan "kamu" - jangan campur dengan "saya" atau "Anda"
 
-${recentConversation ? `PERCAKAPAN TERAKHIR:
-${recentConversation}` : ""}
+${
+  recentConversation
+    ? `PERCAKAPAN TERAKHIR:
+${recentConversation}`
+    : ""
+}
 
 PROFIL PENGGUNA:
 ${
   profile
-    ? `- Kendaraan: ${getVehicleTypeLabel(profile.vehicleType)} (${profile.vehicleYear})
+    ? `- Kendaraan: ${getVehicleTypeLabel(profile.vehicleType)} (${
+        profile.vehicleYear
+      })
 - Lokasi: ${getCityLabel(profile.city)}
 - Penggunaan: ${getUsageTypeLabel(profile.usageType)}
 - Area rawan banjir: ${profile.floodRisk ? "Ya" : "Tidak"}
 
-Berikan saran yang relevan dengan profil ini, terutama ${profile.floodRisk ? 'perlindungan banjir' : 'perlindungan umum'} untuk daerah ${profile.city}.`
+Berikan saran yang relevan dengan profil ini, terutama ${
+        profile.floodRisk ? "perlindungan banjir" : "perlindungan umum"
+      } untuk daerah ${profile.city}.`
     : "Belum ada profil - berikan informasi umum"
 }
 
@@ -157,14 +192,16 @@ Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan d
   }
 }
 
-async function getRelevantProducts(profile: UserProfile | null): Promise<Product[]> {
+async function getRelevantProducts(
+  profile: UserProfile | null
+): Promise<Product[]> {
   if (!profile) {
     return await dbHelpers.getProducts();
   }
 
   // Filter based on vehicle type
-  const vehicleKind = ["car", "motorcycle"].includes(profile.vehicleType) 
-    ? profile.vehicleType 
+  const vehicleKind = ["car", "motorcycle"].includes(profile.vehicleType)
+    ? profile.vehicleType
     : undefined;
 
   return await dbHelpers.getProducts({ vehicleKind });
@@ -177,44 +214,59 @@ async function extractDocumentSnippetsFromPython(
   try {
     const searchRequest = {
       query: query,
-      profile: profile ? {
-        vehicleType: profile.vehicleType,
-        city: profile.city,
-        floodRisk: profile.floodRisk,
-        usageType: profile.usageType
-      } : null,
-      top_k: 6
+      profile: profile
+        ? {
+            vehicleType: profile.vehicleType,
+            city: profile.city,
+            floodRisk: profile.floodRisk,
+            usageType: profile.usageType,
+          }
+        : null,
+      top_k: 6,
     };
 
-    console.log('🔍 Calling Python search service with:', JSON.stringify(searchRequest));
+    console.log(
+      "🔍 Calling Python search service with:",
+      JSON.stringify(searchRequest)
+    );
 
-    const response = await fetch('http://localhost:8001/search', {
-      method: 'POST',
+    const response = await fetch(`${process.env.VECTOR_SERVICE_URL}/search`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(searchRequest)
+      body: JSON.stringify(searchRequest),
     });
 
     if (!response.ok) {
-      throw new Error(`Python search service error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Python search service error: ${response.status} ${response.statusText}`
+      );
     }
 
     const searchResult = await response.json();
-    console.log(`✅ Python search returned ${searchResult.chunks.length} chunks`);
+    console.log(
+      `✅ Python search returned ${searchResult.chunks.length} chunks`
+    );
 
     // Convert Python service response to DocumentSnippet format
-    const snippets: DocumentSnippet[] = searchResult.chunks.map((chunk: {content: string, doc_title: string, section: string, source: string}) => ({
-      content: chunk.content,
-      docTitle: chunk.doc_title,
-      section: chunk.section,
-      source: chunk.source
-    }));
+    const snippets: DocumentSnippet[] = searchResult.chunks.map(
+      (chunk: {
+        content: string;
+        doc_title: string;
+        section: string;
+        source: string;
+      }) => ({
+        content: chunk.content,
+        docTitle: chunk.doc_title,
+        section: chunk.section,
+        source: chunk.source,
+      })
+    );
 
     return snippets;
-
   } catch (error) {
-    console.error('Error calling Python search service:', error);
+    console.error("Error calling Python search service:", error);
     // Return empty array if service fails
     return [];
   }
@@ -234,13 +286,7 @@ function validateResponse(
   }
 
   // Check for excessive speculation (only block truly uncertain responses)
-  const uncertaintyWords = [
-    "mungkin",
-    "kira-kira",
-    "kemungkinan",
-    "perkiraan",
-  ];
-
+  const uncertaintyWords = ["mungkin", "kira-kira", "kemungkinan", "perkiraan"];
 
   // Only block if response contains multiple uncertainty words or is very uncertain
   const uncertaintyCount = uncertaintyWords.filter((word) =>
@@ -253,8 +299,16 @@ function validateResponse(
 
   // Check if response contains insurance-related content (more flexible validation)
   const insuranceTerms = [
-    "asuransi", "autocillin", "motopro", "comprehensive", "tlo", 
-    "perlindungan", "coverage", "premi", "klaim", "manfaat"
+    "asuransi",
+    "autocillin",
+    "motopro",
+    "comprehensive",
+    "tlo",
+    "perlindungan",
+    "coverage",
+    "premi",
+    "klaim",
+    "manfaat",
   ];
 
   const hasInsuranceContent = insuranceTerms.some((term) =>
@@ -263,7 +317,10 @@ function validateResponse(
 
   // Only fail validation if response has no insurance content at all
   if (!hasInsuranceContent && snippets.length > 0) {
-    return { isValid: false, reason: "Response not related to insurance content" };
+    return {
+      isValid: false,
+      reason: "Response not related to insurance content",
+    };
   }
 
   return { isValid: true };
@@ -286,24 +343,36 @@ function extractCitations(
     const docTitle = snippet.docTitle.toLowerCase();
 
     // Filter out irrelevant vehicle types
-    const isCarInsurance = responseText.includes('mobil') || responseText.includes('autocillin') || responseText.includes('car');
-    const isMotorcycleDoc = docTitle.includes('motor') || docTitle.includes('motopro');
+    const isCarInsurance =
+      responseText.includes("mobil") ||
+      responseText.includes("autocillin") ||
+      responseText.includes("car");
+    const isMotorcycleDoc =
+      docTitle.includes("motor") || docTitle.includes("motopro");
 
-    const isMotorcycleInsurance = responseText.includes('motor') && !responseText.includes('mobil');
-    const isCarDoc = docTitle.includes('autocillin') || docTitle.includes('mobil');
+    const isMotorcycleInsurance =
+      responseText.includes("motor") && !responseText.includes("mobil");
+    const isCarDoc =
+      docTitle.includes("autocillin") || docTitle.includes("mobil");
 
     // Skip irrelevant documents
-    if ((isCarInsurance && isMotorcycleDoc) || (isMotorcycleInsurance && isCarDoc)) {
+    if (
+      (isCarInsurance && isMotorcycleDoc) ||
+      (isMotorcycleInsurance && isCarDoc)
+    ) {
       return; // Skip this document
     }
 
     // More selective citation logic
     const hasDocReference =
       response.includes(snippet.docTitle) || // Exact document name mentioned
-      docWords.some(word => word.length > 4 && responseText.includes(word)) || // Key words from doc title
-      snippet.content.toLowerCase().split(/\s+/).some(word =>
-        word.length > 6 && responseText.includes(word) // Specific content words mentioned
-      );
+      docWords.some((word) => word.length > 4 && responseText.includes(word)) || // Key words from doc title
+      snippet.content
+        .toLowerCase()
+        .split(/\s+/)
+        .some(
+          (word) => word.length > 6 && responseText.includes(word) // Specific content words mentioned
+        );
 
     if (hasDocReference) {
       // Create a unique key to avoid duplicates
@@ -312,11 +381,12 @@ function extractCitations(
       // Only add if we haven't seen this citation before
       if (!seenCitations.has(citationKey)) {
         // Clean up snippet content for display only
-        const cleanSnippet = snippet.content
-          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .replace(/([a-zA-Z])\s+([a-zA-Z])/g, '$1$2') // Remove spaces between letters
-          .trim()
-          .slice(0, 150) + "...";
+        const cleanSnippet =
+          snippet.content
+            .replace(/\s+/g, " ") // Replace multiple spaces with single space
+            .replace(/([a-zA-Z])\s+([a-zA-Z])/g, "$1$2") // Remove spaces between letters
+            .trim()
+            .slice(0, 150) + "...";
 
         citations.push({
           docTitle: snippet.docTitle,
@@ -346,7 +416,10 @@ interface ConversationMemory {
   disclaimerShown: boolean;
 }
 
-function buildConversationMemory(conversationHistory: ChatMessage[], profile: UserProfile | null): ConversationMemory {
+function buildConversationMemory(
+  conversationHistory: ChatMessage[],
+  profile: UserProfile | null
+): ConversationMemory {
   const memory: ConversationMemory = {
     userProfile: profile,
     topicsDiscussed: [],
@@ -357,16 +430,26 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
     previousResponses: [],
     keyPhrases: [],
     currentFocus: null,
-    disclaimerShown: false
+    disclaimerShown: false,
   };
 
   // Extract topics and products from recent conversation
   const recentMessages = conversationHistory.slice(-6); // Last 3 exchanges
-  const allText = recentMessages.map(msg => msg.content).join(' ').toLowerCase();
+  const allText = recentMessages
+    .map((msg) => msg.content)
+    .join(" ")
+    .toLowerCase();
 
   // Extract insurance products mentioned
-  const products = ['autocillin', 'motopro', 'mobilite', 'motolite', 'comprehensive', 'tlo'];
-  products.forEach(product => {
+  const products = [
+    "autocillin",
+    "motopro",
+    "mobilite",
+    "motolite",
+    "comprehensive",
+    "tlo",
+  ];
+  products.forEach((product) => {
     if (allText.includes(product)) {
       memory.lastProductMentioned = product;
       memory.topicsDiscussed.push(product);
@@ -374,8 +457,18 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
   });
 
   // Extract key topics
-  const topics = ['manfaat', 'premi', 'klaim', 'coverage', 'perlindungan', 'banjir', 'flood', 'kecelakaan', 'pencurian'];
-  topics.forEach(topic => {
+  const topics = [
+    "manfaat",
+    "premi",
+    "klaim",
+    "coverage",
+    "perlindungan",
+    "banjir",
+    "flood",
+    "kecelakaan",
+    "pencurian",
+  ];
+  topics.forEach((topic) => {
     if (allText.includes(topic)) {
       memory.topicsDiscussed.push(topic);
     }
@@ -383,21 +476,33 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
 
   // Track explained concepts to avoid repetition
   const concepts = [
-    'autocillin', 'comprehensive', 'perluasan perlindungan', 'zurich care',
-    'premi calculation', 'banjir protection', 'bengkel atpm', 'fasilitas bengkel',
-    'perlindungan dari banjir', 'angin topan', 'gempa bumi'
+    "autocillin",
+    "comprehensive",
+    "perluasan perlindungan",
+    "zurich care",
+    "premi calculation",
+    "banjir protection",
+    "bengkel atpm",
+    "fasilitas bengkel",
+    "perlindungan dari banjir",
+    "angin topan",
+    "gempa bumi",
   ];
-  const assistantMessages = recentMessages.filter(msg => msg.role === 'assistant');
-  const assistantTexts = assistantMessages.map(msg => msg.content.toLowerCase());
+  const assistantMessages = recentMessages.filter(
+    (msg) => msg.role === "assistant"
+  );
+  const assistantTexts = assistantMessages.map((msg) =>
+    msg.content.toLowerCase()
+  );
 
-  concepts.forEach(concept => {
-    if (assistantTexts.some(msg => msg.includes(concept.toLowerCase()))) {
+  concepts.forEach((concept) => {
+    if (assistantTexts.some((msg) => msg.includes(concept.toLowerCase()))) {
       memory.explainedConcepts.push(concept);
     }
   });
 
   // Track previous assistant responses to prevent exact duplicates
-  memory.previousResponses = assistantMessages.map(msg => msg.content);
+  memory.previousResponses = assistantMessages.map((msg) => msg.content);
 
   // Extract key phrases that were already mentioned to avoid repetition
   const keyPhrasePatterns = [
@@ -405,15 +510,16 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
     /perlindungan[\s\S]*?bencana alam[\s\S]*?banjir/gi,
     /kerusakan akibat[\s\S]*?kecelakaan/gi,
     /penggantian kerugian[\s\S]*?100%/gi,
-    /syarat dan ketentuan[\s\S]*?berlaku/gi
+    /syarat dan ketentuan[\s\S]*?berlaku/gi,
   ];
 
-  assistantTexts.forEach(text => {
-    keyPhrasePatterns.forEach(pattern => {
+  assistantTexts.forEach((text) => {
+    keyPhrasePatterns.forEach((pattern) => {
       const matches = text.match(pattern);
       if (matches) {
-        matches.forEach(match => {
-          if (match.length > 20) { // Only track substantial phrases
+        matches.forEach((match) => {
+          if (match.length > 20) {
+            // Only track substantial phrases
             memory.keyPhrases.push(match.trim());
           }
         });
@@ -422,16 +528,24 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
   });
 
   // Check if disclaimer was already shown
-  memory.disclaimerShown = assistantMessages.some(msg =>
-    msg.content.includes('informasi umum') && msg.content.includes('kontrak')
+  memory.disclaimerShown = assistantMessages.some(
+    (msg) =>
+      msg.content.includes("informasi umum") && msg.content.includes("kontrak")
   );
 
   // Determine current focus based on recent user questions
-  const lastUserMessage = conversationHistory.filter(msg => msg.role === 'user').slice(-1)[0]?.content.toLowerCase();
+  const lastUserMessage = conversationHistory
+    .filter((msg) => msg.role === "user")
+    .slice(-1)[0]
+    ?.content.toLowerCase();
   if (lastUserMessage) {
-    if (lastUserMessage.includes('premi')) memory.currentFocus = 'premium';
-    else if (lastUserMessage.includes('manfaat') || lastUserMessage.includes('coverage')) memory.currentFocus = 'benefits';
-    else if (lastUserMessage.includes('klaim')) memory.currentFocus = 'claims';
+    if (lastUserMessage.includes("premi")) memory.currentFocus = "premium";
+    else if (
+      lastUserMessage.includes("manfaat") ||
+      lastUserMessage.includes("coverage")
+    )
+      memory.currentFocus = "benefits";
+    else if (lastUserMessage.includes("klaim")) memory.currentFocus = "claims";
   }
 
   // Extract key words for context
@@ -444,32 +558,40 @@ function buildConversationMemory(conversationHistory: ChatMessage[], profile: Us
   return memory;
 }
 
-function enhanceQueryWithContext(currentMessage: string, memory: ConversationMemory): string {
+function enhanceQueryWithContext(
+  currentMessage: string,
+  memory: ConversationMemory
+): string {
   let enhancedQuery = currentMessage;
   const messageLower = currentMessage.toLowerCase();
 
   // Detect vehicle type from message and enhance accordingly
-  if (messageLower.includes('mobil') || messageLower.includes('car')) {
-    enhancedQuery += ' asuransi mobil autocillin car automotive kendaraan bermotor roda empat';
+  if (messageLower.includes("mobil") || messageLower.includes("car")) {
+    enhancedQuery +=
+      " asuransi mobil autocillin car automotive kendaraan bermotor roda empat";
     // Exclude motorcycle terms
-    enhancedQuery += ' -motor -motorcycle -sepeda -roda dua';
-  } else if (messageLower.includes('motor') || messageLower.includes('motorcycle') || messageLower.includes('sepeda motor')) {
-    enhancedQuery += ' asuransi motor motopro motorcycle sepeda motor roda dua';
+    enhancedQuery += " -motor -motorcycle -sepeda -roda dua";
+  } else if (
+    messageLower.includes("motor") ||
+    messageLower.includes("motorcycle") ||
+    messageLower.includes("sepeda motor")
+  ) {
+    enhancedQuery += " asuransi motor motopro motorcycle sepeda motor roda dua";
     // Exclude car terms
-    enhancedQuery += ' -mobil -car -automotive -autocillin';
+    enhancedQuery += " -mobil -car -automotive -autocillin";
   }
 
   // Add user profile context if available
   if (memory.userProfile) {
     const profile = memory.userProfile;
-    if (profile.vehicleType === 'car') {
-      enhancedQuery += ' mobil car autocillin automotive';
-    } else if (profile.vehicleType === 'motorcycle') {
-      enhancedQuery += ' motor motorcycle motopro sepeda motor';
+    if (profile.vehicleType === "car") {
+      enhancedQuery += " mobil car autocillin automotive";
+    } else if (profile.vehicleType === "motorcycle") {
+      enhancedQuery += " motor motorcycle motopro sepeda motor";
     }
 
     if (profile.floodRisk) {
-      enhancedQuery += ' banjir flood perluasan perlindungan alam';
+      enhancedQuery += " banjir flood perluasan perlindungan alam";
     }
 
     if (profile.city) {
@@ -484,7 +606,7 @@ function enhanceQueryWithContext(currentMessage: string, memory: ConversationMem
 
   // Add relevant topics from conversation
   if (memory.topicsDiscussed.length > 0) {
-    const relevantTopics = memory.topicsDiscussed.slice(0, 3).join(' ');
+    const relevantTopics = memory.topicsDiscussed.slice(0, 3).join(" ");
     enhancedQuery += ` ${relevantTopics}`;
   }
 
@@ -496,7 +618,8 @@ function formatRecentConversation(conversationHistory: ChatMessage[]): string {
 
   const recentMessages = conversationHistory.slice(-4); // Last 2 exchanges
   return recentMessages
-    .map(msg => `${msg.role === 'user' ? 'Pengguna' : 'Maya'}: ${msg.content}`)
-    .join('\n');
+    .map(
+      (msg) => `${msg.role === "user" ? "Pengguna" : "Maya"}: ${msg.content}`
+    )
+    .join("\n");
 }
-

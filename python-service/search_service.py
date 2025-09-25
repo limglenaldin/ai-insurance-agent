@@ -12,10 +12,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from dotenv import load_dotenv
 
-# Configuration
-VECTOR_DB_PATH = "./vector_db"
-EMBED_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+# Load environment variables
+load_dotenv()
+
+# Configuration from environment variables
+VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "./vector_db")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", "8001"))
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+DOCS_BASE_URL = os.getenv("DOCS_BASE_URL", "http://localhost:3000/docs")
 
 # Pydantic models for API
 class SearchRequest(BaseModel):
@@ -44,7 +52,7 @@ app = FastAPI(
 # CORS middleware for Next.js integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_origins=ALLOWED_ORIGINS,  # Configurable origins from environment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -135,7 +143,7 @@ def extract_document_info(node) -> Dict[str, str]:
     return {
         "doc_title": doc_title,
         "section": section,
-        "source": f"http://localhost:3000/docs/{file_name}"
+        "source": f"{DOCS_BASE_URL}/{file_name}"
     }
 
 @app.on_event("startup")
@@ -223,8 +231,8 @@ if __name__ == "__main__":
     print("🚀 Starting Insurance Document Search Service...")
     uvicorn.run(
         "search_service:app",
-        host="0.0.0.0",
-        port=8001,
+        host=HOST,
+        port=PORT,
         reload=True,
         log_level="info"
     )

@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+llama-index-core
+llama-index-embeddings-huggingface
+llama-index-vector-stores-faiss
+python-dotenv

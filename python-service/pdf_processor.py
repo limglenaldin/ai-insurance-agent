@@ -10,12 +10,18 @@ from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageCon
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from dotenv import load_dotenv
 import faiss
 
-# Configuration
-DOCS_PATH = Path("../public/docs")  # Path to PDF documents
-VECTOR_DB_PATH = "./vector_db"      # Where to save FAISS database
-EMBED_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"  # Multilingual model
+# Load environment variables
+load_dotenv()
+
+# Configuration from environment variables
+DOCS_PATH = Path(os.getenv("DOCS_PATH", "../public/docs"))  # Path to PDF documents
+VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "./vector_db")  # Where to save FAISS database
+EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")  # Multilingual model
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))
+CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
 
 def setup_embedding_model():
     """Setup multilingual embedding model for Indonesian text"""
@@ -57,8 +63,8 @@ def create_vector_index(documents, embed_model):
     
     # Setup text splitter for better chunking
     text_splitter = SentenceSplitter(
-        chunk_size=512,    # Smaller chunks for better retrieval
-        chunk_overlap=50   # Some overlap to maintain context
+        chunk_size=CHUNK_SIZE,    # Configurable chunk size
+        chunk_overlap=CHUNK_OVERLAP   # Configurable overlap to maintain context
     )
     
     # Use default simple vector store (more reliable than FAISS for now)
