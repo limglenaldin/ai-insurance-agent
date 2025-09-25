@@ -15,18 +15,18 @@ export default function Home() {
             <div className="mb-8">
               <div className="text-center mb-6">
                 <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                  Maya
+                  Miria
                 </h1>
                 <p className="text-lg text-gray-600 dark:text-gray-400">Asisten AI dari InsurAI</p>
               </div>
               
               <div className="max-w-4xl mx-auto mb-8">
                 <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-                  Temukan Asuransi yang Tepat dengan Maya! 🎯
+                  Temukan Asuransi yang Tepat dengan Miria! 🎯
                 </h2>
                 <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
                   Asisten AI yang ramah dan berpengalaman untuk membantu Anda memahami produk asuransi dengan mudah. 
-                  Maya memberikan jawaban yang akurat berdasarkan dokumen resmi RIPLAY.
+                  Miria memberikan jawaban yang akurat berdasarkan dokumen resmi RIPLAY.
                 </p>
                 
                 {/* Value Proposition */}
@@ -51,7 +51,7 @@ export default function Home() {
                 <Link href="/chat">
                   <Button size="lg" className="text-lg px-10 py-6 h-auto w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-300 transform hover:scale-105 transition-all text-white">
                     <MessageSquare className="w-6 h-6 mr-2" />
-                    Chat dengan Maya
+                    Chat dengan Miria
                   </Button>
                 </Link>
                 <Link href="/compare">
@@ -64,14 +64,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* What Maya Can Do */}
+          {/* What Miria Can Do */}
           <div className="max-w-6xl mx-auto mb-20">
             <div className="text-center mb-12">
               <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-                Apa yang Bisa Maya Lakukan? 🤔
+                Apa yang Bisa Miria Lakukan? 🤔
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-lg">
-                Maya siap membantu Anda dengan berbagai kebutuhan asuransi
+                Miria siap membantu Anda dengan berbagai kebutuhan asuransi
               </p>
             </div>
             
@@ -85,7 +85,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-sm">
-                    "Maya, apa itu comprehensive?" <br/>
+                    "Miria, apa itu comprehensive?" <br/>
                     "Bagaimana cara klaim asuransi?"
                   </CardDescription>
                 </CardContent>
@@ -139,7 +139,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-                Kenapa Pilih Maya? ✨
+                Kenapa Pilih Miria? ✨
               </h3>
             </div>
             
@@ -152,7 +152,7 @@ export default function Home() {
                   Jawaban Terpercaya
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Semua jawaban Maya berdasarkan dokumen RIPLAY resmi - tanpa spekulasi, hanya fakta yang akurat.
+                  Semua jawaban Miria berdasarkan dokumen RIPLAY resmi - tanpa spekulasi, hanya fakta yang akurat.
                 </p>
               </div>
 
@@ -164,7 +164,7 @@ export default function Home() {
                   24/7 Siap Membantu
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Maya tersedia kapan saja Anda butuhkan. Tidak ada antrian, tidak ada jam kerja.
+                  Miria tersedia kapan saja Anda butuhkan. Tidak ada antrian, tidak ada jam kerja.
                 </p>
               </div>
 
@@ -186,7 +186,7 @@ export default function Home() {
           <div className="max-w-2xl mx-auto text-center mt-20">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
               <h3 className="text-2xl font-bold mb-4">
-                Siap Bertemu Maya? 🚀
+                Siap Bertemu Miria? 🚀
               </h3>
               <p className="mb-6 text-blue-100">
                 Mulai percakapan pertama Anda dan rasakan pengalaman memahami asuransi yang berbeda!

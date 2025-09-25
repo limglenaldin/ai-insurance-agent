@@ -124,10 +124,10 @@ The application uses a microservices architecture where Next.js acts as an encap
 ```
 ├── app/                          # Next.js App Router
 │   ├── api/                      # API route handlers (proxy layer)
-│   │   ├── chat/route.ts        # Main chat endpoint with Maya persona
+│   │   ├── chat/route.ts        # Main chat endpoint with Miria persona
 │   │   ├── compare/route.ts     # Product comparison endpoint  
 │   │   └── products/route.ts    # Product data endpoint
-│   ├── chat/page.tsx            # Chat interface with Maya
+│   ├── chat/page.tsx            # Chat interface with Miria
 │   ├── compare/page.tsx         # Product comparison page
 │   └── globals.css              # Tailwind + shadcn theme variables
 ├── components/                   # React components
@@ -153,7 +153,7 @@ The application uses a microservices architecture where Next.js acts as an encap
 
 ## Key Features Implementation
 
-**Maya AI Persona & Conversation Memory:**
+**Miria AI Persona & Conversation Memory:**
 - Implemented in `/app/api/chat/route.ts`
 - Maintains conversation context and memory across messages
 - Profile-based query enhancement for personalized responses
@@ -192,13 +192,13 @@ All TypeScript interfaces are centralized in `lib/types.ts` following separation
 - **Service Dependencies**: Both Next.js (3000) and Python service (8001) must run simultaneously
 - **Profile Enhancement**: The system enhances queries based on user profile (vehicle type, location, flood risk)
 - **Citation Validation**: All AI responses are validated against source documents with automatic citation extraction
-- **Maya Persona**: The AI assistant has a specific Indonesian-friendly persona with conversation memory
+- **Miria Persona**: The AI assistant has a specific Indonesian-friendly persona with conversation memory
 - **Theme System**: Uses shadcn/ui theme variables in `globals.css` - avoid hardcoded colors in components
 - **Vector Database**: `python-service/vector_db/` should be excluded from git (large generated files)
 
 ## API Endpoints
 
-- `POST /api/chat`: Main chat interface with Maya AI persona
+- `POST /api/chat`: Main chat interface with Miria AI persona
 - `POST /api/compare`: Product comparison with AI analysis  
 - `GET /api/products`: Retrieve insurance product data
 - `GET http://localhost:8001/health`: Python service health check

@@ -32,14 +32,14 @@ export const usageTypes = [
   { value: "delivery", label: "Kurir/Delivery" },
 ];
 
-// Quick Templates for Chat with Maya
+// Quick Templates for Chat with Miria
 export const quickTemplates = [
-  "Halo Maya, saya baru mau beli asuransi mobil. Bisa jelaskan produk yang cocok untuk saya?",
-  "Maya, apa saja perlindungan yang ada dalam asuransi comprehensive?", 
-  "Maya, kalau mobil saya kena banjir, bagaimana cara klaimnya?",
-  "Bisa tolong jelaskan perbedaan antara TLO dan Comprehensive, Maya?",
-  "Maya, berapa lama biasanya proses klaim asuransi kendaraan?",
-  "Untuk area Jakarta yang sering banjir, asuransi mana yang paling cocok Maya?",
-  "Maya, bagaimana cara menghitung premi asuransi untuk mobil tahun 2020?",
-  "Maya, apa saja manfaat tambahan dari asuransi kendaraan bermotor?",
+  "Halo Miria, saya baru mau beli asuransi mobil. Bisa jelaskan produk yang cocok untuk saya?",
+  "Miria, apa saja perlindungan yang ada dalam asuransi comprehensive?",
+  "Miria, kalau mobil saya kena banjir, bagaimana cara klaimnya?",
+  "Bisa tolong jelaskan perbedaan antara TLO dan Comprehensive, Miria?",
+  "Miria, berapa lama biasanya proses klaim asuransi kendaraan?",
+  "Untuk area Jakarta yang sering banjir, asuransi mana yang paling cocok Miria?",
+  "Miria, bagaimana cara menghitung premi asuransi untuk mobil tahun 2020?",
+  "Miria, apa saja manfaat tambahan dari asuransi kendaraan bermotor?",
 ];

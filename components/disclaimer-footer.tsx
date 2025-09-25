@@ -13,7 +13,7 @@ export function DisclaimerFooter() {
             <span className="font-bold text-lg">InsurAI</span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Maya adalah asisten asuransi bertenaga AI yang memberikan informasi berdasarkan dokumen resmi 
+            Miria adalah asisten asuransi bertenaga AI yang memberikan informasi berdasarkan dokumen resmi 
             dengan sitasi yang akurat dan perlindungan privasi penuh.
           </p>
         </div>
@@ -22,7 +22,7 @@ export function DisclaimerFooter() {
 
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600 dark:text-gray-400">
           <div>
-            <p>© 2024 Maya by InsurAI.</p>
+            <p>© 2024 Miria by InsurAI.</p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-col md:flex-row items-center gap-4">
             <div className="flex items-center gap-4">

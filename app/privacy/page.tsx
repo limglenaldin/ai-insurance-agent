@@ -17,7 +17,7 @@ export default function PrivacyPage() {
               Kebijakan Privasi
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              Komitmen kami untuk melindungi privasi dan data Anda dengan Maya AI Assistant
+              Komitmen kami untuk melindungi privasi dan data Anda dengan Miria AI Assistant
             </p>
           </div>
 
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
                   <strong>Kami menghormati privasi Anda sepenuhnya:</strong>
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
-                  <li>Profil dan riwayat chat Maya hanya tersimpan di perangkat Anda</li>
+                  <li>Profil dan riwayat chat Miria hanya tersimpan di perangkat Anda</li>
                   <li>Tidak ada server yang menyimpan data pribadi atau conversation history</li>
                   <li>Query ke AI hanya berisi pertanyaan dan profil umum, tanpa identitas</li>
                   <li>Anda dapat menghapus semua data kapan saja (Clear Chat button)</li>
@@ -88,9 +88,9 @@ export default function PrivacyPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Data yang Dikirim ke Maya AI</h3>
+                  <h3 className="font-semibold mb-2">Data yang Dikirim ke Miria AI</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Ketika Anda chat dengan Maya, hanya teks pertanyaan dan informasi profil umum 
+                    Ketika Anda chat dengan Miria, hanya teks pertanyaan dan informasi profil umum 
                     (jenis kendaraan, kota, tahun kendaraan, tipe penggunaan, flood risk) yang dikirim ke 
                     layanan AI (Groq/Llama) melalui FastAPI Python service. Tidak ada informasi identitas 
                     pribadi seperti nama, alamat, atau nomor telepon yang dikirim.
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="font-semibold mb-2">Conversation Memory yang Aman</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Meskipun Maya memiliki conversation memory untuk memberikan respons kontekstual, 
+                    Meskipun Miria memiliki conversation memory untuk memberikan respons kontekstual, 
                     memori ini hanya tersimpan di localStorage browser Anda. Server AI (Groq/Llama) dan 
                     FastAPI Python service tidak menyimpan riwayat percakapan atau dapat mengidentifikasi 
                     pengguna individual antar sesi.
@@ -172,7 +172,7 @@ export default function PrivacyPage() {
                 </p>
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                   <p className="text-green-700 dark:text-green-300 font-medium">
-                    <strong>Komitmen Kami:</strong> InsurAI dengan Maya AI Assistant akan selalu mengutamakan 
+                    <strong>Komitmen Kami:</strong> InsurAI dengan Miria AI Assistant akan selalu mengutamakan 
                     privasi pengguna dan tidak akan pernah menjual, menyewakan, atau membagikan data pribadi 
                     Anda kepada pihak ketiga. Teknologi RAG, conversation memory, dan personalization 
                     dirancang untuk bekerja tanpa mengompromikan privasi Anda.

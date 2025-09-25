@@ -5,15 +5,15 @@
 InsurAI is an AI-powered assistant that helps users **understand insurance products in plain language**.  
 Built with Next.js, shadcn/ui, and Meta Llama, it provides **grounded Q&A with citations from official RIPLAY documents**, policy comparison, and personalized recommendations using advanced RAG (Retrieval-Augmented Generation) architecture — all designed with a **privacy-first approach**.
 
-> **Meet Maya**: Your friendly Indonesian AI insurance consultant who provides accurate, citation-backed answers with conversation memory and personalized recommendations.
+> **Meet Miria**: Your friendly Indonesian AI insurance consultant who provides accurate, citation-backed answers with conversation memory and personalized recommendations.
 
 ---
 
 ## 🚀 Features
 
-### 🤖 **Maya AI Assistant**
+### 🤖 **Miria AI Assistant**
 
-- **Indonesian-Friendly Persona**: Chat with Maya, your dedicated insurance consultant
+- **Indonesian-Friendly Persona**: Chat with Miria, your dedicated insurance consultant
 - **Conversation Memory**: Maintains context across messages for natural dialogue
 - **Personalized Responses**: Tailored advice based on your profile and previous conversations
 
@@ -261,7 +261,7 @@ Visit the application at:
 
 - **Frontend**: http://localhost:3000
 - **API Health**: http://localhost:8001/health
-- **Features**: Chat with Maya, compare products, manage your profile
+- **Features**: Chat with Miria, compare products, manage your profile
 
 ---
 

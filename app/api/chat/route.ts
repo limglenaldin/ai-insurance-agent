@@ -53,10 +53,10 @@ export async function POST(request: NextRequest) {
       .map((snippet) => `**${snippet.docTitle}**\n${snippet.content}`)
       .join("\n\n---\n\n");
 
-    // Build Maya persona with conversation memory
+    // Build Miria persona with conversation memory
     const recentConversation = formatRecentConversation(conversationHistory);
 
-    const systemPrompt = `Aku Maya, konsultan asuransi berpengalaman yang ramah dan dapat dipercaya. Aku berbicara dengan bahasa yang mudah dipahami dan natural, seperti berbincang dengan teman. Aku selalu mengutamakan akurasi informasi dan memberikan penjelasan yang jelas.
+    const systemPrompt = `Aku Miria, konsultan asuransi berpengalaman yang ramah dan dapat dipercaya. Aku berbicara dengan bahasa yang mudah dipahami dan natural, seperti berbincang dengan teman. Aku selalu mengutamakan akurasi informasi dan memberikan penjelasan yang jelas.
 
 KEPRIBADIAN AKU:
 - Ramah dan sabar dalam menjelaskan
@@ -143,7 +143,7 @@ Berikan saran yang relevan dengan profil ini, terutama ${
 DOKUMEN SUMBER:
 ${context}
 
-Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan dengan cara Maya yang ramah dan natural. Berbicara seperti konsultan asuransi yang berpengalaman tapi santai dan mudah dipahami. INGAT: Selalu gunakan "aku" dan "kamu" secara konsisten!`;
+Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan dengan cara Miria yang ramah dan natural. Berbicara seperti konsultan asuransi yang berpengalaman tapi santai dan mudah dipahami. INGAT: Selalu gunakan "aku" dan "kamu" secara konsisten!`;
 
     // Send to Groq/Llama
     const completion = await groq.chat.completions.create({
@@ -334,7 +334,7 @@ function extractCitations(
   const seenCitations = new Set<string>();
 
   // Extract citations based on document references in response
-  // Since Maya may not mention exact document names, check for key terms or include all used snippets
+  // Since Miria may not mention exact document names, check for key terms or include all used snippets
   const responseWords = response.toLowerCase().split(/\s+/);
 
   snippets.forEach((snippet) => {
@@ -619,7 +619,7 @@ function formatRecentConversation(conversationHistory: ChatMessage[]): string {
   const recentMessages = conversationHistory.slice(-4); // Last 2 exchanges
   return recentMessages
     .map(
-      (msg) => `${msg.role === "user" ? "Pengguna" : "Maya"}: ${msg.content}`
+      (msg) => `${msg.role === "user" ? "Pengguna" : "Miria"}: ${msg.content}`
     )
     .join("\n");
 }
