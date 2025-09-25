@@ -1,11 +1,10 @@
 # InsurAI
 
-**Your Insurance AI Assistant Agent**
+**Your AI-Powered Insurance Assistant**
 
-InsurAI is an AI-powered assistant that helps users **understand insurance products in plain language**.  
-Built with Next.js, shadcn/ui, and Meta Llama, it provides **grounded Q&A with citations from official RIPLAY documents**, policy comparison, and personalized recommendations using advanced RAG (Retrieval-Augmented Generation) architecture — all designed with a **privacy-first approach**.
+InsurAI is an AI-powered insurance assistant that makes insurance simple, transparent, and accessible for everyone. Built with Meta Llama 3.3 70B and advanced RAG architecture, it features **Miria** - a friendly Indonesian AI persona that delivers document-grounded Q&A, personalized recommendations, and product comparisons. The solution acts as a regulation-safe, unbiased digital insurance consultant that reduces company support costs while enhancing customer experience.
 
-> **Meet Miria**: Your friendly Indonesian AI insurance consultant who provides accurate, citation-backed answers with conversation memory and personalized recommendations.
+> **Meet Miria**: Your friendly Indonesian AI insurance consultant who provides accurate, citation-backed answers with conversation memory and personalized recommendations based on official RIPLAY documents.
 
 ---
 
@@ -13,9 +12,10 @@ Built with Next.js, shadcn/ui, and Meta Llama, it provides **grounded Q&A with c
 
 ### 🤖 **Miria AI Assistant**
 
-- **Indonesian-Friendly Persona**: Chat with Miria, your dedicated insurance consultant
-- **Conversation Memory**: Maintains context across messages for natural dialogue
+- **Indonesian-Friendly Persona**: Chat with Miria, your dedicated insurance consultant with consistent informal language style
+- **Conversation Memory**: Maintains context across messages and sessions for natural dialogue
 - **Personalized Responses**: Tailored advice based on your profile and previous conversations
+- **Anti-Hallucination Validation**: All responses require citations from official documents
 
 ### 📚 **Grounded Q&A with Citations**
 
@@ -26,32 +26,33 @@ Built with Next.js, shadcn/ui, and Meta Llama, it provides **grounded Q&A with c
 
 ### 👤 **Profile-Based Personalization**
 
-- Mini profile form (vehicle type, city, year, flood risk, usage)
-- Stored locally in the browser (localStorage) for privacy
+- Profile setup with vehicle type, location, and flood risk preferences
+- Stored locally in the browser (localStorage) for privacy-first approach
 - Query enhancement: Jakarta users with flood risk get enhanced "banjir flood" terms
-- Personalized search results and recommendations
+- Profile-aware responses and personalized recommendations
 
 ### ⚖️ **Policy Product Comparison**
 
-- AI-powered comparison between two insurance products
+- AI-powered side-by-side comparison between insurance products
 - Detailed analysis including features, suitability, and limitations
-- Side-by-side comparison with personalized recommendations
-- Real document-based comparisons, not dummy data
+- Transparent document-grounded comparisons with clickable citations
+- Personalized recommendations based on user profile
 
 ### 🔒 **Privacy-First Design**
 
-- Conversations saved only in user's browser via localStorage
+- Zero server-side storage of personal data - all user profiles and chat history stored only in browser localStorage
+- GDPR compliance with complete user data control
 - Clear chat anytime with a single click
-- No sensitive data stored server-side
 - Profile data never leaves your device
 
 ### 🏗️ **Production-Ready Architecture**
 
-- Real PDF document processing using LlamaIndex
-- FastAPI Python microservice for document search (port 8001)
+- Complete document processing pipeline using LlamaIndex with FAISS vector database
+- FastAPI Python microservice for semantic search (port 8001)
 - Next.js frontend with API encapsulation layer (port 3000)
-- Semantic search with multilingual embedding models
-- PostgreSQL database with Prisma ORM
+- Multilingual embeddings for Indonesian and English content
+- PostgreSQL database with Prisma ORM for structured data
+- Real-time communication between microservices with proper error handling
 
 ---
 
@@ -80,8 +81,8 @@ Built with Next.js, shadcn/ui, and Meta Llama, it provides **grounded Q&A with c
 **Storage:**
 
 - PostgreSQL database (products, documents, tenants)
-- Vector database for document embeddings
-- LocalStorage (profile + chat history only)
+- FAISS vector database for document embeddings
+- LocalStorage (profile + chat history only for privacy-first approach)
 
 ---
 
@@ -233,27 +234,28 @@ The system has been **production-tested with real insurance PDF documents** proc
 
 ### **Real Implementation, Not Demo**
 
-✅ Production-tested with real insurance PDF documents processed into searchable chunks  
-✅ Production-ready RAG architecture with FastAPI + LlamaIndex  
-✅ Semantic vector search with multilingual embeddings  
-✅ Profile-based query enhancement and personalization  
-✅ Anti-hallucination validation with Indonesian language support  
-✅ Proper citation extraction and source validation
+✅ Production-tested with real insurance PDF documents processed into 92 searchable chunks
+✅ Production-ready RAG architecture with FastAPI + LlamaIndex + FAISS
+✅ Semantic vector search with multilingual embeddings for Indonesian and English
+✅ Profile-based query enhancement and personalization (e.g., Jakarta + flood risk → "banjir flood" terms)
+✅ Anti-hallucination validation with mandatory citations requiring document grounding
+✅ Conversation memory with anti-repetition mechanisms
 
 ### **Privacy by Design**
 
-🔒 Zero server-side data storage for user conversations  
-🔒 Profile data stored only in browser localStorage  
-🔒 No tracking, cookies, or data collection  
-🔒 Complete conversation history control
+🔒 Zero server-side storage of personal data - GDPR compliant
+🔒 All user profiles and chat history stored only in browser localStorage
+🔒 No tracking, cookies, or sensitive data collection
+🔒 Complete conversation history control with clear functionality
 
-### **Multi-Service Architecture**
+### **B2B-Focused Multi-Service Architecture**
 
-🏗️ FastAPI Python service (port 8001) for document processing  
-🏗️ Next.js frontend (port 3000) with API encapsulation layer  
-🏗️ PostgreSQL database with Prisma ORM for metadata  
-🏗️ Vector database for semantic document search  
-🏗️ Groq API integration for Meta Llama model access
+🏗️ Embeddable widget design for seamless website integration
+🏗️ API approach for custom integration support
+🏗️ FastAPI Python service (port 8001) for document processing
+🏗️ Next.js frontend (port 3000) with API encapsulation layer
+🏗️ PostgreSQL + FAISS vector database for semantic search
+🏗️ Groq API integration for Meta Llama 3.3 70B model access
 
 ## 🚀 Live Demo
 
@@ -265,6 +267,20 @@ Visit the application at:
 
 ---
 
+## 🏢 Business Model & Future Plans
+
+**Revenue Streams:**
+- SaaS subscription model with monthly/annual plans for insurance companies
+- Partnership commissions from policy sales generated through the platform
+- B2B focus with scalable subscription tiers and performance-based revenue sharing
+
+**Future Development:**
+- Embeddable widget for seamless website integration
+- API approach for custom integration support
+- Partnership ecosystem with fintech and insurance marketplaces
+- Co-innovation programs with insurance partners
+- Social media presence for public education and industry conference participation
+
 ## ⚖️ Disclaimer
 
-This application is for educational and demonstration purposes only. It is not a substitute for official policy documents or professional legal/financial advice. Always confirm details with the official insurance provider or certified agent before making any insurance decisions.
+This application provides AI-powered insurance guidance for educational purposes. It supports but does not replace licensed insurance agents or official policy documents. All AI responses are grounded in official RIPLAY documents with proper citations, but users should always confirm details with official insurance providers or certified agents before making insurance decisions. The system includes clear disclaimers about AI limitations and encourages professional consultation for complex cases.
