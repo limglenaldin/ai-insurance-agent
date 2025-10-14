@@ -90,17 +90,25 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-              <Button
-                size="lg"
-                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-              >
-                <MessageSquare className="mr-2 h-5 w-5" />
-                Chat dengan Miria
-              </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                <BarChart3 className="mr-2 h-5 w-5" />
-                Bandingkan Produk
-              </Button>
+              <Link href="/chat">
+                <Button
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                >
+                  <MessageSquare className="mr-2 h-5 w-5" />
+                  Chat dengan Miria
+                </Button>
+              </Link>
+              <Link href="/compare">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  <BarChart3 className="mr-2 h-5 w-5" />
+                  Bandingkan Produk
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="relative mt-8 lg:mt-0">
