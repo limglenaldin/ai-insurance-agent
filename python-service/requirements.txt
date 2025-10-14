@@ -1,6 +1,11 @@
 fastapi
-uvicorn
+uvicorn[standard]
 llama-index-core
 llama-index-embeddings-huggingface
 llama-index-vector-stores-faiss
+faiss-cpu
+sentence-transformers
+torch
+transformers
 python-dotenv
+pypdf
