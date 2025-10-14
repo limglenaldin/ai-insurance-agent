@@ -37,8 +37,9 @@ services:
       context: ./python-service
       dockerfile: Dockerfile
     container_name: insurance-backend
-    ports:
-      - "8001:8001"
+    # Port 8001 is NOT exposed externally - only accessible via internal Docker network
+    expose:
+      - "8001"
     environment:
       - PYTHONUNBUFFERED=1
       - HOST=0.0.0.0

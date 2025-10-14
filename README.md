@@ -240,8 +240,8 @@ Look for these messages:
 **5. Access the Application**
 
 - **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:8001
-- **Health Check:** http://localhost:8001/health
+
+**Note:** The backend API (port 8001) is not exposed externally for security. It's only accessible to the frontend via the internal Docker network.
 
 ### Docker Commands
 
@@ -270,29 +270,37 @@ docker-compose down -v
 
 The Docker setup includes:
 
-- **Frontend Container** (Next.js) - Port 3000
-- **Backend Container** (Python FastAPI) - Port 8001
-- **Shared Network** - Enables inter-container communication
+- **Frontend Container** (Next.js) - Exposed on port 3000
+- **Backend Container** (Python FastAPI) - Internal only (not exposed)
+- **Shared Network** - Enables secure inter-container communication
 - **Persistent Volumes** - Stores vector database data
+
+**Security Benefits:**
+- Backend API is not accessible from outside the Docker network
+- Only the frontend can communicate with the backend
+- Reduces attack surface and protects sensitive endpoints
+- Frontend acts as a secure gateway to backend services
 
 ```
 ┌──────────────────────────────────────────────┐
-│           Docker Compose Network             │
+│       Docker Compose Network (Internal)      │
 │                                              │
 │  ┌─────────────┐      ┌─────────────┐       │
 │  │  Frontend   │◄────►│  Backend    │       │
 │  │  (Next.js)  │      │  (FastAPI)  │       │
-│  │  Port 3000  │      │  Port 8001  │       │
-│  └─────────────┘      └──────┬──────┘       │
-│                              │              │
-│                       ┌──────▼──────┐       │
-│                       │ Vector DB   │       │
-│                       │  (Volume)   │       │
-│                       └─────────────┘       │
-└──────────────────────────────────────────────┘
-         │                      │
-         ▼                      ▼
-  Host Port 3000        Host Port 8001
+│  │             │      │ Port 8001   │       │
+│  └──────┬──────┘      │ (internal)  │       │
+│         │             └──────┬──────┘       │
+│         │                    │              │
+│         │             ┌──────▼──────┐       │
+│         │             │ Vector DB   │       │
+│         │             │  (Volume)   │       │
+│         │             └─────────────┘       │
+└─────────┼──────────────────────────────────┘
+          │
+          ▼
+   Host Port 3000
+   (Public Access)
 ```
 
 ### Using Local PostgreSQL (Optional)
@@ -333,7 +341,9 @@ docker-compose exec frontend npx prisma db push
 
 **Frontend cannot connect to backend:**
 - Verify VECTOR_SERVICE_URL in .env uses `http://backend:8001` (not localhost)
-- Check backend health: http://localhost:8001/health
+- Check backend is running: `docker-compose ps backend`
+- Check backend health from inside container: `docker-compose exec backend curl http://localhost:8001/health`
+- Verify backend logs: `docker-compose logs backend`
 - Ensure both containers are on the same network: `docker network ls`
 
 **Database connection errors:**
