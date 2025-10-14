@@ -207,9 +207,11 @@ cd ai-insurance-agent
 cp .env.docker.example .env
 
 # Edit .env and add your actual values:
-# - GROQ_API_KEY: Your Groq API key
+# - GROQ_API_KEY: Your Groq API key (REQUIRED before building)
 # - DATABASE_URL: Your PostgreSQL connection string (Supabase recommended)
 ```
+
+**Important:** Make sure to configure your `.env` file with actual values BEFORE running `docker-compose up --build`, as these environment variables are needed during the build process.
 
 **3. Build and Start All Services**
 
@@ -309,6 +311,13 @@ docker-compose exec frontend npx prisma db push
 ```
 
 ### Troubleshooting
+
+**Build fails with "GROQ_API_KEY environment variable is missing":**
+- Ensure your `.env` file exists and contains `GROQ_API_KEY=your_actual_key`
+- Environment variables must be set BEFORE running `docker-compose up --build`
+- Check `.env` file is in the project root (same directory as docker-compose.yml)
+- Verify the key is not empty: `cat .env | grep GROQ_API_KEY`
+- Rebuild after fixing: `docker-compose build --no-cache frontend`
 
 **Backend fails to start:**
 - Check if vector database exists: `docker-compose exec backend ls -la /app/vector_db`

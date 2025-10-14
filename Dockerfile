@@ -23,9 +23,23 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set environment for build
+# Accept build arguments
+ARG GROQ_API_KEY
+ARG GROQ_API_BASE
+ARG GROQ_MODEL
+ARG DATABASE_URL
+ARG VECTOR_SERVICE_URL
+ARG APP_URL
+
+# Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV GROQ_API_KEY=${GROQ_API_KEY}
+ENV GROQ_API_BASE=${GROQ_API_BASE}
+ENV GROQ_MODEL=${GROQ_MODEL}
+ENV DATABASE_URL=${DATABASE_URL}
+ENV VECTOR_SERVICE_URL=${VECTOR_SERVICE_URL}
+ENV APP_URL=${APP_URL}
 
 # Build Next.js application with Turbopack
 RUN npm run build

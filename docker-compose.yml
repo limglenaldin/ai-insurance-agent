@@ -6,6 +6,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - GROQ_API_KEY=${GROQ_API_KEY}
+        - GROQ_API_BASE=${GROQ_API_BASE:-https://api.groq.com/openai/v1}
+        - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+        - DATABASE_URL=${DATABASE_URL}
+        - VECTOR_SERVICE_URL=http://backend:8001
+        - APP_URL=${APP_URL:-http://localhost:3000}
     container_name: insurance-frontend
     ports:
       - "3000:3000"
