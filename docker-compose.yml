@@ -61,7 +61,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 180s
 
   # Optional: Local PostgreSQL Database (commented out by default)
   # Uncomment if you want to run a local PostgreSQL instead of using Supabase

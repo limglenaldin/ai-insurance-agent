@@ -223,14 +223,19 @@ docker-compose up --build
 docker-compose up -d --build
 ```
 
-**4. Initialize Vector Database (First-time only)**
+**4. Wait for Services to Initialize**
 
-On the first run, you need to process PDF documents to create the vector database:
+On the first run, the backend will automatically process PDF documents to create the vector database. This may take 2-3 minutes. You can monitor the progress:
 
 ```bash
-# Run the PDF processor inside the container
-docker-compose exec backend python pdf_processor.py
+# Watch backend initialization logs
+docker-compose logs -f backend
 ```
+
+Look for these messages:
+- `⚠️  Vector database not found. Initializing...`
+- `✅ Vector database initialized successfully!`
+- `🚀 Starting search service...`
 
 **5. Access the Application**
 
@@ -241,7 +246,7 @@ docker-compose exec backend python pdf_processor.py
 ### Docker Commands
 
 ```bash
-# Start services
+# Start services (vector database auto-initializes on first run)
 docker-compose up -d
 
 # Stop services
@@ -319,10 +324,12 @@ docker-compose exec frontend npx prisma db push
 - Verify the key is not empty: `cat .env | grep GROQ_API_KEY`
 - Rebuild after fixing: `docker-compose build --no-cache frontend`
 
-**Backend fails to start:**
-- Check if vector database exists: `docker-compose exec backend ls -la /app/vector_db`
-- Run PDF processor: `docker-compose exec backend python pdf_processor.py`
-- View logs: `docker-compose logs backend`
+**Backend fails to start or takes too long:**
+- First startup takes 2-3 minutes for automatic vector database initialization
+- Check initialization status: `docker-compose logs backend | grep "Vector database"`
+- Verify PDF documents are mounted: `docker-compose exec backend ls -la /app/docs`
+- If initialization fails, check logs: `docker-compose logs backend`
+- To manually reinitialize: `docker-compose exec backend python pdf_processor.py`
 
 **Frontend cannot connect to backend:**
 - Verify VECTOR_SERVICE_URL in .env uses `http://backend:8001` (not localhost)

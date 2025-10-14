@@ -20,6 +20,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY search_service.py .
 COPY pdf_processor.py .
+COPY docker-entrypoint.sh .
+
+# Make entrypoint script executable
+RUN chmod +x docker-entrypoint.sh
 
 # Create directories for vector database and documents
 RUN mkdir -p ./vector_db
@@ -34,10 +38,10 @@ ENV DOCS_PATH=/app/docs
 # Expose port
 EXPOSE 8001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+# Health check (longer start period for vector database initialization)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-# Start the service
-# Note: Vector database will be built on first run if it doesn't exist
-CMD ["python", "search_service.py"]
+# Use entrypoint script to initialize vector database if needed
+# The script will automatically create the vector database on first run
+ENTRYPOINT ["./docker-entrypoint.sh"]
