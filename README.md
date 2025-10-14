@@ -182,6 +182,161 @@ cd python-service && source venv/bin/activate && python search_service.py
 
 ---
 
+## 🐳 Docker Deployment (Recommended for Production)
+
+For easier deployment and production environments, use Docker to run the entire application with a single command.
+
+### Prerequisites
+
+- **Docker Desktop** or Docker Engine (20.10+)
+- **Docker Compose** (v2.0+)
+
+### Quick Start with Docker
+
+**1. Clone the Repository**
+
+```bash
+git clone https://github.com/your-username/ai-insurance-agent.git
+cd ai-insurance-agent
+```
+
+**2. Configure Environment Variables**
+
+```bash
+# Copy the Docker environment template
+cp .env.docker.example .env
+
+# Edit .env and add your actual values:
+# - GROQ_API_KEY: Your Groq API key
+# - DATABASE_URL: Your PostgreSQL connection string (Supabase recommended)
+```
+
+**3. Build and Start All Services**
+
+```bash
+# Build and start all containers
+docker-compose up --build
+
+# Or run in detached mode (background)
+docker-compose up -d --build
+```
+
+**4. Initialize Vector Database (First-time only)**
+
+On the first run, you need to process PDF documents to create the vector database:
+
+```bash
+# Run the PDF processor inside the container
+docker-compose exec backend python pdf_processor.py
+```
+
+**5. Access the Application**
+
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8001
+- **Health Check:** http://localhost:8001/health
+
+### Docker Commands
+
+```bash
+# Start services
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# View logs for specific service
+docker-compose logs -f frontend
+docker-compose logs -f backend
+
+# Rebuild after code changes
+docker-compose up --build
+
+# Stop and remove all containers, networks, and volumes
+docker-compose down -v
+```
+
+### Architecture with Docker
+
+The Docker setup includes:
+
+- **Frontend Container** (Next.js) - Port 3000
+- **Backend Container** (Python FastAPI) - Port 8001
+- **Shared Network** - Enables inter-container communication
+- **Persistent Volumes** - Stores vector database data
+
+```
+┌──────────────────────────────────────────────┐
+│           Docker Compose Network             │
+│                                              │
+│  ┌─────────────┐      ┌─────────────┐       │
+│  │  Frontend   │◄────►│  Backend    │       │
+│  │  (Next.js)  │      │  (FastAPI)  │       │
+│  │  Port 3000  │      │  Port 8001  │       │
+│  └─────────────┘      └──────┬──────┘       │
+│                              │              │
+│                       ┌──────▼──────┐       │
+│                       │ Vector DB   │       │
+│                       │  (Volume)   │       │
+│                       └─────────────┘       │
+└──────────────────────────────────────────────┘
+         │                      │
+         ▼                      ▼
+  Host Port 3000        Host Port 8001
+```
+
+### Using Local PostgreSQL (Optional)
+
+By default, the setup assumes you're using an external PostgreSQL database (like Supabase). To use a local PostgreSQL container instead:
+
+**1. Edit `docker-compose.yml`**
+
+Uncomment the `db` service section at the bottom of the file.
+
+**2. Update `.env`**
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@db:5432/insurance_db?schema=public"
+```
+
+**3. Run Prisma migrations**
+
+```bash
+docker-compose exec frontend npx prisma db push
+```
+
+### Troubleshooting
+
+**Backend fails to start:**
+- Check if vector database exists: `docker-compose exec backend ls -la /app/vector_db`
+- Run PDF processor: `docker-compose exec backend python pdf_processor.py`
+- View logs: `docker-compose logs backend`
+
+**Frontend cannot connect to backend:**
+- Verify VECTOR_SERVICE_URL in .env uses `http://backend:8001` (not localhost)
+- Check backend health: http://localhost:8001/health
+- Ensure both containers are on the same network: `docker network ls`
+
+**Database connection errors:**
+- Verify DATABASE_URL in .env is correct
+- For Supabase, ensure your IP is whitelisted
+- For local DB, ensure the db service is running: `docker-compose ps`
+
+**Vector database needs rebuilding:**
+```bash
+# Clear existing vector database
+docker-compose down -v
+
+# Restart and rebuild
+docker-compose up -d --build
+docker-compose exec backend python pdf_processor.py
+```
+
+---
+
 ## 🏗️ Architecture
 
 The application uses a **RAG (Retrieval-Augmented Generation)** architecture with the following components:

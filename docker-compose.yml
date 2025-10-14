@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Next.js Frontend Service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: insurance-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - APP_URL=http://localhost:3000
+      - VECTOR_SERVICE_URL=http://backend:8001
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_API_BASE=${GROQ_API_BASE:-https://api.groq.com/openai/v1}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - insurance-network
+    restart: unless-stopped
+
+  # Python FastAPI Backend Service
+  backend:
+    build:
+      context: ./python-service
+      dockerfile: Dockerfile
+    container_name: insurance-backend
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HOST=0.0.0.0
+      - PORT=8001
+      - VECTOR_DB_PATH=/app/vector_db
+      - DOCS_PATH=/app/docs
+      - EMBED_MODEL=${EMBED_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - DOCS_BASE_URL=http://localhost:3000/docs
+    volumes:
+      # Mount PDF documents from host
+      - ./public/docs:/app/docs:ro
+      # Persist vector database
+      - vector_db_data:/app/vector_db
+    networks:
+      - insurance-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Local PostgreSQL Database (commented out by default)
+  # Uncomment if you want to run a local PostgreSQL instead of using Supabase
+  # db:
+  #   image: postgres:16-alpine
+  #   container_name: insurance-db
+  #   environment:
+  #     - POSTGRES_USER=${POSTGRES_USER:-postgres}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+  #     - POSTGRES_DB=${POSTGRES_DB:-insurance_db}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - insurance-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+networks:
+  insurance-network:
+    driver: bridge
+
+volumes:
+  vector_db_data:
+    driver: local
+  # postgres_data:
+  #   driver: local

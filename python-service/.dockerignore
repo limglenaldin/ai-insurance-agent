@@ -1,0 +1,39 @@
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+.Python
+
+# Virtual environment
+venv
+env
+ENV
+.venv
+
+# Vector database (will be regenerated or mounted)
+vector_db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Misc
+.DS_Store
+*.log
