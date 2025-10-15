@@ -166,6 +166,10 @@ Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan d
     const validationResult = validateResponse(aiResponse, documentSnippets);
 
     if (!validationResult.isValid) {
+      log.warn(
+        { url: "/api/chat", antiHallucinationValidation: validationResult },
+        "Finished request"
+      );
       return NextResponse.json({
         answer:
           "Maaf, informasi yang Anda cari tidak tersedia dalam dokumen resmi yang ada. Silakan ajukan pertanyaan lain atau hubungi agen asuransi untuk informasi lebih lanjut.",
