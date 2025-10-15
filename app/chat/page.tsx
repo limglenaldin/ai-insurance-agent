@@ -7,6 +7,9 @@ import { ChatMessage } from "@/lib/types";
 import { quickTemplates } from "@/lib/constants";
 import { Menu, Trash2, Send } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger('chat-page');
 
 // Function to render message content with simple bold support
 function renderMessageContent(content: string) {
@@ -96,8 +99,8 @@ export default function ChatPage() {
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Chat error:", error);
-      
+      log.error({ err: error }, "Chat error");
+
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",

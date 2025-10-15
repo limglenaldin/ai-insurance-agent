@@ -13,12 +13,17 @@ import {
   getUsageTypeLabel,
 } from "@/lib/utils";
 import { dbHelpers } from "@/lib/db";
+import { createLogger } from "@/lib/logger";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
+  const log = createLogger("compare-api");
+
+  log.info({ url: "/api/compare" }, "Started request");
+
   try {
     const { productAId, productBId, profile } = await request.json();
 
@@ -63,9 +68,12 @@ export async function POST(request: NextRequest) {
         productASnippets,
         productBSnippets
       );
+
+      log.info({ url: "/api/compare" }, "Finished request");
+
       return NextResponse.json(comparison);
     } catch (aiError) {
-      console.error("AI comparison failed:", aiError);
+      log.error({ err: aiError, url: "/api/compare" }, "AI comparison failed");
 
       // Return error response that frontend can handle
       return NextResponse.json(
@@ -77,7 +85,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Compare API error:", error);
+    log.error({ err: error, url: "/api/compare" }, "Compare API error");
 
     return NextResponse.json(
       { error: "Internal server error" },
@@ -90,6 +98,8 @@ async function getProductDocumentSnippets(
   product: Product,
   profile: UserProfile | null
 ): Promise<DocumentSnippet[]> {
+  const log = createLogger("document-snippets");
+
   try {
     // Create product-specific search queries
     const queries = [
@@ -167,15 +177,16 @@ async function getProductDocumentSnippets(
       )
       .slice(0, 6);
 
-    console.log(
-      `✅ Found ${uniqueSnippets.length} relevant snippets for ${product.name}`
+    log.info(
+      { productName: product.name, snippetsCount: uniqueSnippets.length },
+      "Found relevant snippets for product"
     );
 
     return uniqueSnippets;
   } catch (error) {
-    console.error(
-      `Error getting document snippets for ${product.name}:`,
-      error
+    log.error(
+      { err: error, productName: product.name },
+      "Error getting document snippets for product"
     );
     return [];
   }
@@ -188,6 +199,8 @@ async function generateAIComparison(
   productASnippets: DocumentSnippet[],
   productBSnippets: DocumentSnippet[]
 ): Promise<ComparisonResult> {
+  const log = createLogger("ai-comparison");
+
   try {
     const profileContext = profile
       ? `
@@ -276,7 +289,10 @@ Provide a detailed comparison in Indonesian with this JSON structure:
     const aiResponse = completion.choices[0]?.message?.content;
 
     if (aiResponse) {
-      console.log("Raw AI Response:", aiResponse.substring(0, 500) + "...");
+      log.debug(
+        { responsePreview: aiResponse.substring(0, 500) },
+        "Raw AI Response received"
+      );
 
       try {
         // Try to extract JSON from the response (sometimes AI wraps it in markdown)
@@ -296,18 +312,20 @@ Provide a detailed comparison in Indonesian with this JSON structure:
         }
 
         const parsed = JSON.parse(jsonStr);
-        console.log("Successfully parsed AI response");
+        log.info("Successfully parsed AI response");
         return parsed;
       } catch (parseError) {
-        console.warn("Failed to parse AI response as JSON:", parseError);
-        console.log("AI response was:", aiResponse);
+        log.warn(
+          { err: parseError, aiResponse },
+          "Failed to parse AI response as JSON"
+        );
       }
     }
 
     // Return error if AI fails - but don't throw, let the outer catch handle it
     throw new Error("AI processing failed to generate valid comparison");
   } catch (error) {
-    console.error("AI comparison failed:", error);
+    log.error({ err: error }, "AI comparison generation failed");
     throw error; // Re-throw to be handled by outer catch
   }
 }

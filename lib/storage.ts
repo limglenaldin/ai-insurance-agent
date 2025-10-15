@@ -1,5 +1,8 @@
 import { UserProfile, ChatMessage } from "./types";
 import { STORAGE_KEYS } from "./constants";
+import { createLogger } from "./logger";
+
+const log = createLogger('local-storage');
 
 export class LocalStorageManager {
   private static isClient = typeof window !== "undefined";
@@ -10,7 +13,7 @@ export class LocalStorageManager {
     try {
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
     } catch (error) {
-      console.error("Failed to save profile to localStorage:", error);
+      log.error({ err: error }, "Failed to save profile to localStorage");
     }
   }
 
@@ -20,7 +23,7 @@ export class LocalStorageManager {
       const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
       return saved ? JSON.parse(saved) : null;
     } catch (error) {
-      console.error("Failed to get profile from localStorage:", error);
+      log.error({ err: error }, "Failed to get profile from localStorage");
       return null;
     }
   }
@@ -30,7 +33,7 @@ export class LocalStorageManager {
     try {
       localStorage.removeItem(STORAGE_KEYS.PROFILE);
     } catch (error) {
-      console.error("Failed to clear profile from localStorage:", error);
+      log.error({ err: error }, "Failed to clear profile from localStorage");
     }
   }
 
@@ -40,7 +43,7 @@ export class LocalStorageManager {
     try {
       localStorage.setItem(STORAGE_KEYS.CHAT_HISTORY, JSON.stringify(messages));
     } catch (error) {
-      console.error("Failed to save chat history to localStorage:", error);
+      log.error({ err: error }, "Failed to save chat history to localStorage");
     }
   }
 
@@ -56,7 +59,7 @@ export class LocalStorageManager {
         timestamp: new Date(msg.timestamp),
       }));
     } catch (error) {
-      console.error("Failed to get chat history from localStorage:", error);
+      log.error({ err: error }, "Failed to get chat history from localStorage");
       return [];
     }
   }
@@ -66,7 +69,7 @@ export class LocalStorageManager {
     try {
       localStorage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
     } catch (error) {
-      console.error("Failed to clear chat history from localStorage:", error);
+      log.error({ err: error }, "Failed to clear chat history from localStorage");
     }
   }
 
@@ -110,7 +113,7 @@ export class LocalStorageManager {
 
       return { used, available };
     } catch (error) {
-      console.error("Failed to get storage info:", error);
+      log.error({ err: error }, "Failed to get storage info");
       return { used: 0, available: 0 };
     }
   }
@@ -151,7 +154,7 @@ export class LocalStorageManager {
 
       return true;
     } catch (error) {
-      console.error("Failed to import data:", error);
+      log.error({ err: error }, "Failed to import data");
       return false;
     }
   }

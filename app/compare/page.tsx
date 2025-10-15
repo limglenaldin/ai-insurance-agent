@@ -19,6 +19,9 @@ import {
 import { Product, ComparisonResult } from "@/lib/types";
 import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger('compare-page');
 
 export default function ComparePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -39,7 +42,7 @@ export default function ComparePage() {
         const data = await response.json();
         setProducts(data.filter((p: Product) => p.isActive !== false));
       } catch (error) {
-        console.error("Failed to load products:", error);
+        log.error({ err: error }, "Failed to load products");
         setProducts([]); // Set empty array on error
       }
     };
@@ -80,7 +83,7 @@ export default function ComparePage() {
 
       setComparison(data);
     } catch (error) {
-      console.error("Comparison error:", error);
+      log.error({ err: error }, "Comparison error");
 
       // Show error message to user instead of fallback
       const errorMessage =

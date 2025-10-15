@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
+import { createLogger } from './logger';
+
+const log = createLogger('database');
 
 function createPrismaClient() {
   return new PrismaClient({
@@ -133,7 +136,7 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     await prisma.$queryRaw`SELECT 1`;
     return true;
   } catch (error) {
-    console.error('Database connection failed:', error);
+    log.error({ err: error }, 'Database connection failed');
     return false;
   }
 }

@@ -11,6 +11,7 @@ import {
   getCityLabel,
   getUsageTypeLabel,
 } from "@/lib/utils";
+import { createLogger } from "@/lib/logger";
 
 // No longer using pdfjs-dist - using Python service instead
 
@@ -19,6 +20,9 @@ const groq = new Groq({
 });
 
 export async function POST(request: NextRequest) {
+  const log = createLogger("chat-api");
+
+  log.info({ url: "/api/chat" }, "Started request");
   try {
     const { message, profile, conversationHistory = [] } = await request.json();
 
@@ -172,12 +176,14 @@ Berdasarkan HANYA pada dokumen di atas dan memori percakapan, jawab pertanyaan d
     // Extract citations from response
     const citations = extractCitations(aiResponse, documentSnippets);
 
+    log.info({ url: "/api/chat" }, "Finished request");
+
     return NextResponse.json({
       answer: aiResponse,
       citations: citations,
     });
   } catch (error) {
-    console.error("Chat API error:", error);
+    log.error({ url: "api/chat", err: error }, "Chat API error");
 
     return NextResponse.json(
       {
@@ -194,6 +200,8 @@ async function extractDocumentSnippetsFromPython(
   query: string,
   profile: UserProfile | null
 ): Promise<DocumentSnippet[]> {
+  const log = createLogger("python-search");
+
   try {
     const searchRequest = {
       query: query,
@@ -208,10 +216,7 @@ async function extractDocumentSnippetsFromPython(
       top_k: 6,
     };
 
-    console.log(
-      "🔍 Calling Python search service with:",
-      JSON.stringify(searchRequest)
-    );
+    log.info({ searchRequest }, "Calling Python search service");
 
     const response = await fetch(`${process.env.VECTOR_SERVICE_URL}/search`, {
       method: "POST",
@@ -228,8 +233,9 @@ async function extractDocumentSnippetsFromPython(
     }
 
     const searchResult = await response.json();
-    console.log(
-      `✅ Python search returned ${searchResult.chunks.length} chunks`
+    log.info(
+      { chunksCount: searchResult.chunks.length },
+      "Python search returned chunks"
     );
 
     // Convert Python service response to DocumentSnippet format
@@ -249,7 +255,7 @@ async function extractDocumentSnippetsFromPython(
 
     return snippets;
   } catch (error) {
-    console.error("Error calling Python search service:", error);
+    log.error({ err: error }, "Error calling Python search service");
     // Return empty array if service fails
     return [];
   }
