@@ -238,7 +238,7 @@ async function extractDocumentSnippetsFromPython(
 
     const searchResult = await response.json();
     log.info(
-      { chunksCount: searchResult.chunks.length, data: searchResult.chunks },
+      { chunksCount: searchResult.chunks.length, chunks: searchResult.chunks },
       "Python search returned chunks"
     );
 
