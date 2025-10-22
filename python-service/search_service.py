@@ -180,18 +180,33 @@ async def search_documents(request: SearchRequest):
         from llama_index.core import Settings
         Settings.embed_model = embed_model
         
-        # Perform vector search  
+        # Perform vector search
         retriever = search_index.as_retriever(
-            similarity_top_k=request.top_k * 2  # Get more results to filter
+            similarity_top_k=request.top_k * 3  # Get more results to filter (increased to 3x)
         )
         
         nodes = retriever.retrieve(enhanced_query)
-        
-        # Convert nodes to response format
+
+        # Convert nodes to response format with filtering
         chunks = []
+        vehicle_type = request.profile.get("vehicleType") if request.profile else None
+
         for node in nodes:
             doc_info = extract_document_info(node)
-            
+            file_name = node.metadata.get('file_name', '').lower()
+
+            # Filter based on vehicle type
+            if vehicle_type == "car":
+                # Skip motorcycle documents
+                if "motolite" in file_name or "motopro" in file_name or "motor" in doc_info["doc_title"].lower():
+                    print(f"  ⏭️ Skipping motorcycle document: {doc_info['doc_title']}")
+                    continue
+            elif vehicle_type == "motorcycle":
+                # Skip car documents
+                if "autocillin" in file_name or "mobil" in doc_info["doc_title"].lower():
+                    print(f"  ⏭️ Skipping car document: {doc_info['doc_title']}")
+                    continue
+
             chunk = DocumentChunk(
                 content=node.text[:1000],  # Limit content length
                 doc_title=doc_info["doc_title"],
@@ -200,9 +215,10 @@ async def search_documents(request: SearchRequest):
                 score=node.score if hasattr(node, 'score') else 0.0
             )
             chunks.append(chunk)
-        
-        # Limit to requested number
-        chunks = chunks[:request.top_k]
+
+            # Stop once we have enough relevant chunks
+            if len(chunks) >= request.top_k:
+                break
         
         print(f"✅ Found {len(chunks)} relevant chunks")
         
