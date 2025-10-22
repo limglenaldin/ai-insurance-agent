@@ -5,13 +5,15 @@ Extracts text from PDFs and creates FAISS vector database
 """
 
 import os
+import re
 from pathlib import Path
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext
+from llama_index.core import VectorStoreIndex, StorageContext, Document
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from dotenv import load_dotenv
 import faiss
+import pdfplumber
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +24,31 @@ VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "./vector_db")  # Where to save FAI
 EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")  # Multilingual model
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
+
+def clean_text(text: str) -> str:
+    """
+    Clean extracted PDF text by normalizing whitespace and removing artifacts.
+    """
+    # Normalize line breaks
+    cleaned = re.sub(r'\r\n', '\n', text)
+
+    # Remove excessive whitespace while preserving paragraph structure
+    cleaned = re.sub(r'[ \t]+', ' ', cleaned)
+
+    # Normalize multiple newlines to max 2 (paragraph break)
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+
+    # Remove spaces before punctuation
+    cleaned = re.sub(r'\s+([.,;:!?)])', r'\1', cleaned)
+
+    # Remove leading/trailing whitespace from each line
+    lines = [line.strip() for line in cleaned.split('\n')]
+    cleaned = '\n'.join(lines)
+
+    # Trim leading/trailing whitespace
+    cleaned = cleaned.strip()
+
+    return cleaned
 
 def setup_embedding_model():
     """Setup multilingual embedding model for Indonesian text"""
@@ -34,27 +61,62 @@ def setup_embedding_model():
     return embed_model
 
 def load_documents():
-    """Load PDF documents from the docs directory"""
+    """Load PDF documents from the docs directory using pdfplumber for better extraction"""
     print(f"🔄 Loading documents from {DOCS_PATH}...")
-    
+
     if not DOCS_PATH.exists():
         print(f"❌ Documents path does not exist: {DOCS_PATH}")
         return None
-    
-    # Load all PDF files (SimpleDirectoryReader handles PDFs automatically)
-    documents = SimpleDirectoryReader(
-        input_dir=str(DOCS_PATH),
-        recursive=False,
-        required_exts=[".pdf"]  # Only load PDF files
-    ).load_data()
-    
-    print(f"✅ Loaded {len(documents)} documents")
-    
-    # Print document info
-    for i, doc in enumerate(documents):
-        print(f"  📄 Document {i+1}: {doc.metadata.get('file_name', 'Unknown')}")
-        print(f"     Text length: {len(doc.text)} characters")
-    
+
+    # Get all PDF files
+    pdf_files = list(DOCS_PATH.glob("*.pdf"))
+    if not pdf_files:
+        print(f"❌ No PDF files found in {DOCS_PATH}")
+        return None
+
+    print(f"Found {len(pdf_files)} PDF files")
+
+    documents = []
+
+    for pdf_path in pdf_files:
+        print(f"  📄 Processing: {pdf_path.name}")
+
+        try:
+            # Use pdfplumber for better text extraction
+            with pdfplumber.open(pdf_path) as pdf:
+                full_text = ""
+                for page_num, page in enumerate(pdf.pages, 1):
+                    # Extract text with layout preservation
+                    page_text = page.extract_text(layout=False, x_tolerance=2, y_tolerance=2)
+                    if page_text:
+                        full_text += page_text + "\n\n"
+
+                if not full_text.strip():
+                    print(f"     ⚠️ No text extracted from {pdf_path.name}")
+                    continue
+
+                # Clean the extracted text
+                cleaned_text = clean_text(full_text)
+
+                # Create document with metadata
+                doc = Document(
+                    text=cleaned_text,
+                    metadata={
+                        "file_name": pdf_path.name,
+                        "file_path": str(pdf_path),
+                        "pages": len(pdf.pages)
+                    }
+                )
+                documents.append(doc)
+
+                print(f"     ✅ Extracted {len(cleaned_text)} chars from {len(pdf.pages)} pages")
+                print(f"     Sample: {cleaned_text[:80]}...")
+
+        except Exception as e:
+            print(f"     ❌ Error processing {pdf_path.name}: {e}")
+            continue
+
+    print(f"✅ Successfully loaded {len(documents)} documents")
     return documents
 
 def create_vector_index(documents, embed_model):

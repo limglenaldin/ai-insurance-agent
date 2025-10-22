@@ -9,3 +9,5 @@ torch
 transformers
 python-dotenv
 pypdf
+pdfplumber
+pymupdf
