@@ -45,16 +45,18 @@ services:
       - PYTHONUNBUFFERED=1
       - HOST=0.0.0.0
       - PORT=8001
-      - VECTOR_DB_PATH=/app/vector_db
       - DOCS_PATH=/app/docs
       - EMBED_MODEL=${EMBED_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
       - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
       - DOCS_BASE_URL=http://localhost:3000/docs
+      # MongoDB Atlas configuration
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-insurai}
+      - MONGODB_COLLECTION=${MONGODB_COLLECTION:-document_chunks}
+      - MONGODB_INDEX_NAME=${MONGODB_INDEX_NAME:-vector_index}
     volumes:
-      # Mount PDF documents from host
+      # Mount PDF documents from host (only needed if running pdf_processor.py in container)
       - ./public/docs:/app/docs:ro
-      # Persist vector database
-      - vector_db_data:/app/vector_db
     networks:
       - insurance-network
     restart: unless-stopped
@@ -63,7 +65,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 180s
+      start_period: 120s
 
   # Optional: Local PostgreSQL Database (commented out by default)
   # Uncomment if you want to run a local PostgreSQL instead of using Supabase
@@ -91,8 +93,7 @@ networks:
   insurance-network:
     driver: bridge
 
-volumes:
-  vector_db_data:
-    driver: local
+# Note: No local volumes needed for vector database (using MongoDB Atlas)
+# volumes:
   # postgres_data:
   #   driver: local
