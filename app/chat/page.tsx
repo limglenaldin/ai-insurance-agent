@@ -230,9 +230,9 @@ export default function ChatPage() {
                         {message.citations && message.citations.length > 0 && (
                           <div className="mt-3 pt-2 border-t border-gray-300 dark:border-gray-600">
                             <p className="text-xs font-medium mb-2 opacity-75">Sumber:</p>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                               {message.citations.map((citation, index) => (
-                                <div key={index} className="text-xs bg-white/10 rounded px-2 py-1 inline-block">
+                                <div key={index} className="text-xs bg-white/10 rounded px-2 py-1">
                                   {citation.source ? (
                                     <a
                                       href={citation.source}
