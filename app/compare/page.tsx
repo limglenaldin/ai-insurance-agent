@@ -150,24 +150,24 @@ export default function ComparePage() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               {!isSidebarOpen && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsSidebarOpen(true)}
-                  className="p-2"
+                  className="p-1.5 sm:p-2 flex-shrink-0"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
               )}
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
                   Bandingkan Produk Asuransi
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 hidden sm:block truncate">
                   Pilih dua produk untuk melihat perbandingan
                 </p>
               </div>
@@ -176,38 +176,38 @@ export default function ComparePage() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
           <div className="max-w-6xl mx-auto">
             {isClient && !localStorage.getItem("insurai_profile") && (
-              <Card className="mb-6 border-blue-200 bg-blue-50">
-                <CardHeader>
-                  <CardTitle className="text-blue-800">
+              <Card className="mb-4 sm:mb-6 border-blue-200 bg-blue-50">
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-blue-800 text-base sm:text-lg">
                     Lengkapi Profil Anda
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">
                     Isi profil untuk mendapatkan perbandingan yang lebih
                     personal dan akurat
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-blue-600 text-sm">
+                <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+                  <p className="text-blue-600 text-xs sm:text-sm">
                     Klik avatar di sidebar untuk mengatur profil Anda
                   </p>
                 </CardContent>
               </Card>
             )}
 
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
               <Card>
-                <CardHeader>
-                  <CardTitle>Produk Pertama</CardTitle>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg">Produk Pertama</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
                   <Select
                     value={selectedProductA}
                     onValueChange={setSelectedProductA}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Pilih produk pertama" />
                     </SelectTrigger>
                     <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -216,6 +216,7 @@ export default function ComparePage() {
                           key={product.id}
                           value={product.id.toString()}
                           disabled={selectedProductB === product.id.toString()}
+                          className="text-sm"
                         >
                           {product.name} ({product.mainCoverage})
                         </SelectItem>
@@ -226,15 +227,15 @@ export default function ComparePage() {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Produk Kedua</CardTitle>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg">Produk Kedua</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
                   <Select
                     value={selectedProductB}
                     onValueChange={setSelectedProductB}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Pilih produk kedua" />
                     </SelectTrigger>
                     <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -243,6 +244,7 @@ export default function ComparePage() {
                           key={product.id}
                           value={product.id.toString()}
                           disabled={selectedProductA === product.id.toString()}
+                          className="text-sm"
                         >
                           {product.name} ({product.mainCoverage})
                         </SelectItem>
@@ -253,12 +255,12 @@ export default function ComparePage() {
               </Card>
             </div>
 
-            <div className="text-center mb-8">
+            <div className="text-center mb-4 sm:mb-8">
               <Button
                 size="lg"
                 onClick={handleGenerateComparison}
                 disabled={!selectedProductA || !selectedProductB || isLoading}
-                className="px-8"
+                className="w-full sm:w-auto px-6 sm:px-8 text-sm sm:text-base"
               >
                 {isLoading
                   ? "Membuat Perbandingan..."
@@ -267,37 +269,37 @@ export default function ComparePage() {
             </div>
 
             {comparison && (
-              <div className="space-y-6">
+              <div className="space-y-3 sm:space-y-6">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Ringkasan Perbandingan</CardTitle>
+                  <CardHeader className="p-3 sm:p-6">
+                    <CardTitle className="text-base sm:text-lg">Ringkasan Perbandingan</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 dark:text-gray-300">
+                  <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+                    <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
                       {comparison.summary}
                     </p>
                   </CardContent>
                 </Card>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="text-blue-600">
+                    <CardHeader className="p-3 sm:p-6">
+                      <CardTitle className="text-blue-600 text-base sm:text-lg">
                         {comparison.productA.name}
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-xs sm:text-sm">
                         Coverage: {comparison.productA.coverage}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-3 sm:space-y-4">
                       <div>
-                        <h4 className="font-semibold mb-2">Fitur Utama:</h4>
+                        <h4 className="font-semibold mb-2 text-sm sm:text-base">Fitur Utama:</h4>
                         <ul className="list-disc list-inside space-y-1">
                           {comparison.productA.features.map(
                             (feature, index) => (
                               <li
                                 key={index}
-                                className="text-sm text-gray-600 dark:text-gray-400"
+                                className="text-xs sm:text-sm text-gray-600 dark:text-gray-400"
                               >
                                 {feature}
                               </li>
@@ -307,7 +309,7 @@ export default function ComparePage() {
                       </div>
 
                       <div>
-                        <h4 className="font-semibold mb-2 text-green-600">
+                        <h4 className="font-semibold mb-2 text-green-600 text-sm sm:text-base">
                           Cocok untuk:
                         </h4>
                         <ul className="list-disc list-inside space-y-1">
@@ -315,7 +317,7 @@ export default function ComparePage() {
                             (item, index) => (
                               <li
                                 key={index}
-                                className="text-sm text-gray-600 dark:text-gray-400"
+                                className="text-xs sm:text-sm text-gray-600 dark:text-gray-400"
                               >
                                 {item}
                               </li>
@@ -325,7 +327,7 @@ export default function ComparePage() {
                       </div>
 
                       <div>
-                        <h4 className="font-semibold mb-2 text-orange-600">
+                        <h4 className="font-semibold mb-2 text-orange-600 text-sm sm:text-base">
                           Keterbatasan:
                         </h4>
                         <ul className="list-disc list-inside space-y-1">
@@ -333,7 +335,7 @@ export default function ComparePage() {
                             (limit, index) => (
                               <li
                                 key={index}
-                                className="text-sm text-gray-600 dark:text-gray-400"
+                                className="text-xs sm:text-sm text-gray-600 dark:text-gray-400"
                               >
                                 {limit}
                               </li>
@@ -345,23 +347,23 @@ export default function ComparePage() {
                   </Card>
 
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="text-green-600">
+                    <CardHeader className="p-3 sm:p-6">
+                      <CardTitle className="text-green-600 text-base sm:text-lg">
                         {comparison.productB.name}
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-xs sm:text-sm">
                         Coverage: {comparison.productB.coverage}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-3 sm:space-y-4">
                       <div>
-                        <h4 className="font-semibold mb-2">Fitur Utama:</h4>
+                        <h4 className="font-semibold mb-2 text-sm sm:text-base">Fitur Utama:</h4>
                         <ul className="list-disc list-inside space-y-1">
                           {comparison.productB.features.map(
                             (feature, index) => (
                               <li
                                 key={index}
-                                className="text-sm text-gray-600 dark:text-gray-400"
+                                className="text-xs sm:text-sm text-gray-600 dark:text-gray-400"
                               >
                                 {feature}
                               </li>
@@ -371,7 +373,7 @@ export default function ComparePage() {
                       </div>
 
                       <div>
-                        <h4 className="font-semibold mb-2 text-green-600">
+                        <h4 className="font-semibold mb-2 text-green-600 text-sm sm:text-base">
                           Cocok untuk:
                         </h4>
                         <ul className="list-disc list-inside space-y-1">
@@ -379,7 +381,7 @@ export default function ComparePage() {
                             (item, index) => (
                               <li
                                 key={index}
-                                className="text-sm text-gray-600 dark:text-gray-400"
+                                className="text-xs sm:text-sm text-gray-600 dark:text-gray-400"
                               >
                                 {item}
                               </li>
@@ -389,7 +391,7 @@ export default function ComparePage() {
                       </div>
 
                       <div>
-                        <h4 className="font-semibold mb-2 text-orange-600">
+                        <h4 className="font-semibold mb-2 text-orange-600 text-sm sm:text-base">
                           Keterbatasan:
                         </h4>
                         <ul className="list-disc list-inside space-y-1">
@@ -397,7 +399,7 @@ export default function ComparePage() {
                             (limit, index) => (
                               <li
                                 key={index}
-                                className="text-sm text-gray-600 dark:text-gray-400"
+                                className="text-xs sm:text-sm text-gray-600 dark:text-gray-400"
                               >
                                 {limit}
                               </li>
@@ -410,13 +412,13 @@ export default function ComparePage() {
                 </div>
 
                 <Card className="bg-yellow-50 border-yellow-200">
-                  <CardHeader>
-                    <CardTitle className="text-yellow-800">
+                  <CardHeader className="p-3 sm:p-6">
+                    <CardTitle className="text-yellow-800 text-base sm:text-lg">
                       ⚠️ Disclaimer
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-yellow-700">
+                  <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+                    <p className="text-xs sm:text-sm text-yellow-700">
                       Perbandingan ini bersifat umum dan berdasarkan informasi
                       produk yang tersedia. Untuk detail lengkap seperti premi,
                       syarat, dan ketentuan spesifik, silakan hubungi agen

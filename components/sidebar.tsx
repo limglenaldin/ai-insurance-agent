@@ -48,6 +48,13 @@ export function Sidebar({
     }
   }, [pathname]);
 
+  // Auto-close sidebar on mobile when navigating between pages
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      onToggle(false);
+    }
+  }, [pathname, onToggle]);
+
   const handleProfileSubmit = (profile: UserProfile) => {
     setUserProfile(profile);
     localStorage.setItem("insurai_profile", JSON.stringify(profile));
@@ -63,7 +70,7 @@ export function Sidebar({
     <>
       {/* Sidebar */}
       <div
-        className={`${isOpen ? "w-64" : "w-0"} ${
+        className={`${isOpen ? "w-full sm:w-80 md:w-64" : "w-0"} ${
           isOpen ? "md:relative fixed" : ""
         } md:relative absolute top-0 left-0 h-full z-50 transition-all duration-300 overflow-hidden bg-gray-900 flex flex-col ${className}`}
       >
