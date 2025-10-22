@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 FastAPI Search Service for Insurance Document Vector Search
-Provides semantic search capabilities for the Next.js application
+Provides semantic search capabilities for the Next.js application using MongoDB Atlas
 """
 
 import os
@@ -10,15 +10,20 @@ from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from llama_index.core import StorageContext, load_index_from_storage
+from llama_index.core import VectorStoreIndex, StorageContext
+from llama_index.vector_stores.mongodb import MongoDBAtlasVectorSearch
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from dotenv import load_dotenv
+import pymongo
 
 # Load environment variables
 load_dotenv()
 
 # Configuration from environment variables
-VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "./vector_db")
+MONGODB_URI = os.getenv("MONGODB_URI")  # MongoDB Atlas connection string
+MONGODB_DATABASE = os.getenv("MONGODB_DATABASE", "insurai")  # Database name
+MONGODB_COLLECTION = os.getenv("MONGODB_COLLECTION", "document_chunks")  # Collection name
+MONGODB_INDEX_NAME = os.getenv("MONGODB_INDEX_NAME", "vector_index")  # Vector search index name
 EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8001"))
@@ -45,8 +50,8 @@ class SearchResponse(BaseModel):
 # FastAPI app setup
 app = FastAPI(
     title="Insurance Document Search Service",
-    description="Vector search service for insurance documents using LlamaIndex + FAISS",
-    version="1.0.0"
+    description="Vector search service for insurance documents using LlamaIndex + MongoDB Atlas",
+    version="2.0.0"
 )
 
 # CORS middleware for Next.js integration
@@ -63,27 +68,40 @@ search_index = None
 embed_model = None
 
 def load_search_index():
-    """Load the pre-built vector index from disk"""
+    """Load the vector index from MongoDB Atlas"""
     global search_index, embed_model
-    
+
+    if not MONGODB_URI:
+        raise ValueError("MONGODB_URI environment variable is required")
+
     print("🔄 Loading embedding model...")
     embed_model = HuggingFaceEmbedding(
         model_name=EMBED_MODEL,
         trust_remote_code=True
     )
-    
-    print("🔄 Loading vector index...")
-    if not Path(VECTOR_DB_PATH).exists():
-        raise Exception(f"Vector database not found at {VECTOR_DB_PATH}")
-    
-    # Load using simple approach
-    storage_context = StorageContext.from_defaults(persist_dir=VECTOR_DB_PATH)
-    search_index = load_index_from_storage(
-        storage_context,
+
+    print("🔄 Connecting to MongoDB Atlas...")
+    mongo_client = pymongo.MongoClient(MONGODB_URI)
+
+    # Create MongoDB Atlas vector store
+    vector_store = MongoDBAtlasVectorSearch(
+        mongodb_client=mongo_client,
+        db_name=MONGODB_DATABASE,
+        collection_name=MONGODB_COLLECTION,
+        vector_index_name=MONGODB_INDEX_NAME,
+    )
+
+    # Create storage context with MongoDB vector store
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+    # Load the index from MongoDB
+    print(f"🔄 Loading vector index from MongoDB ({MONGODB_DATABASE}.{MONGODB_COLLECTION})...")
+    search_index = VectorStoreIndex.from_vector_store(
+        vector_store=vector_store,
         embed_model=embed_model
     )
-    
-    print("✅ Search index loaded successfully")
+
+    print("✅ Search index loaded successfully from MongoDB Atlas")
 
 def filter_by_profile(query: str, profile: Dict[str, Any] = None) -> str:
     """Enhance query based on user profile for better results"""
@@ -161,7 +179,9 @@ async def root():
     return {
         "message": "Insurance Document Search Service is running",
         "status": "healthy",
-        "vector_db_path": VECTOR_DB_PATH
+        "vector_store": "MongoDB Atlas",
+        "database": MONGODB_DATABASE,
+        "collection": MONGODB_COLLECTION
     }
 
 @app.post("/search", response_model=SearchResponse)
@@ -234,11 +254,22 @@ async def search_documents(request: SearchRequest):
 @app.get("/health")
 async def health_check():
     """Detailed health check"""
+    mongodb_connected = False
+    try:
+        if MONGODB_URI:
+            client = pymongo.MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+            client.server_info()  # Will raise exception if cannot connect
+            mongodb_connected = True
+    except Exception:
+        pass
+
     return {
-        "status": "healthy",
+        "status": "healthy" if search_index is not None and mongodb_connected else "unhealthy",
         "index_loaded": search_index is not None,
-        "vector_db_exists": Path(VECTOR_DB_PATH).exists(),
-        "embedding_model": EMBED_MODEL
+        "mongodb_connected": mongodb_connected,
+        "embedding_model": EMBED_MODEL,
+        "database": MONGODB_DATABASE,
+        "collection": MONGODB_COLLECTION
     }
 
 if __name__ == "__main__":

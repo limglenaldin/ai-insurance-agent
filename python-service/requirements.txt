@@ -2,8 +2,8 @@ fastapi
 uvicorn[standard]
 llama-index-core
 llama-index-embeddings-huggingface
-llama-index-vector-stores-faiss
-faiss-cpu
+llama-index-vector-stores-mongodb
+pymongo
 sentence-transformers
 torch
 transformers
