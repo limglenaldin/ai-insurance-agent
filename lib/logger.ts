@@ -1,5 +1,12 @@
 import pino from "pino";
 
+// Determine if we should use pino-pretty transport
+// Disable in production and in edge runtime to avoid worker thread issues
+const usePrettyTransport =
+  process.env.NODE_ENV !== "production" &&
+  typeof window === "undefined" &&
+  process.env.DISABLE_PINO_PRETTY !== "true";
+
 // Configure Pino with structured logging
 const logger = pino({
   level: process.env.NODE_ENV === "production" ? "info" : "debug",
@@ -17,8 +24,8 @@ const logger = pino({
   // Human-readable ISO timestamps
   timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
 
-  // Production: JSON, Development: Pretty formatted
-  ...(process.env.NODE_ENV !== "production" && {
+  // Conditionally add pretty transport to avoid worker thread issues in Next.js
+  ...(usePrettyTransport && {
     transport: {
       target: "pino-pretty",
       options: {
@@ -26,6 +33,7 @@ const logger = pino({
         translateTime: "SYS:yyyy-mm-dd HH:MM:ss",
         ignore: "pid,hostname",
         messageFormat: "[{service}] {msg}",
+        singleLine: false,
       },
     },
   }),
